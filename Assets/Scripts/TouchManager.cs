@@ -2,14 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 
 public class TouchManager : MonoBehaviour {
     public Dictionary<string, Info> dict;
     public GameObject textPrefab;
-    private GameObject canvas;
+    public Button button;
+    private GameObject parent;
     void Start() {
-        canvas = FindObjectOfType<Canvas>().gameObject;
+        parent = FindObjectOfType<Canvas>().transform.Find("Instances").gameObject;
+        //button.onClick.AddListener(OnClick);
     }
 
     void Update() {
@@ -29,22 +30,40 @@ public class TouchManager : MonoBehaviour {
                     }
                 }
             }
+            else {
+                ClearUI();
+            }
         }
     }
 
     void ClearUI() {
         Debug.Log("Clear");
-        foreach(Transform child in canvas.transform) {
+        foreach(Transform child in parent.transform) {
             Destroy(child.gameObject);
         }
     }
     void DisplayInfo(Vector3 pos, Info info, string name) {
-        GameObject obj;
-        obj = Instantiate(textPrefab, pos, Quaternion.identity);
-        Debug.Log(pos);
-        obj.transform.SetParent(canvas.transform);
-        obj.transform.GetChild(1).GetChild(0).GetComponent<Text>().text = info.height + "cm";
-        obj.transform.GetChild(3).GetChild(0).GetComponent<Text>().text = info.weight + "kg";
+        GameObject obj = Instantiate(textPrefab, pos, Quaternion.identity);
+        obj.transform.SetParent(parent.transform);
         obj.name = name;
+
+        var h = obj.transform.GetChild(1);
+        var w = obj.transform.GetChild(3);
+        
+        h.GetComponentInChildren<Text>().text = info.height + "cm";
+        w.GetComponentInChildren<Text>().text = info.weight + "kg";
+
+        h.GetComponent<Button>().onClick.AddListener(OnClickAttribute);
+        w.GetComponent<Button>().onClick.AddListener(OnClickAttribute);
+    }
+
+    public void OnClick() {
+        
+    }
+
+    void OnClickAttribute() {
+        //Instantiate prefab to decide wheter increase/decrease
+        //Set current value as pivot value
+
     }
 }
