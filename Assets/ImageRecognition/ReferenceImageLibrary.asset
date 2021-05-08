@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
+  m_Name: ReferenceImageLibrary
+  m_EditorClassIdentifier: 
+  m_GuidLow: 4801403257230783261
+  m_GuidHigh: 4603760491494653856
+  m_Images:
+  - m_SerializedGuid:
+      m_GuidLow: 5450785827203051773
+      m_GuidHigh: 4294409912331767964
+    m_SerializedTextureGuid:
+      m_GuidLow: 5477652004150413451
+      m_GuidHigh: 2317931543318761897
+    m_Size: {x: 0.3, y: 0.3}
+    m_SpecifySize: 0
+    m_Name: testmarker2
+    m_Texture: {fileID: 2800000, guid: d697888b87794c04a911302d75f22a20, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5010937122760406458
+      m_GuidHigh: 3299161349328032443
+    m_SerializedTextureGuid:
+      m_GuidLow: 5837823523875525211
+      m_GuidHigh: 4271067229703594505
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: lily1
+    m_Texture: {fileID: 2800000, guid: 9a05125b1d90510409624b2e04e1453b, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5507191696661908533
+      m_GuidHigh: 12681119570189039761
+    m_SerializedTextureGuid:
+      m_GuidLow: 3406102641217872281
+      m_GuidHigh: 10601593878209372505
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: lily2
+    m_Texture: {fileID: 2800000, guid: 4e4fa199e84e2f445921a06b766d2093, type: 3}
