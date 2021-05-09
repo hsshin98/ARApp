@@ -2,15 +2,48 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class TouchManager : MonoBehaviour {
     public Dictionary<string, Info> dict;
+    public int minH, maxH, minW, maxW;
     public GameObject textPrefab;
+    public GameObject person, group;
     public Button button;
-    private GameObject parent;
+    public Material blue, pink;
+    public GameObject parent;
+    private Button H, W, B, G, run;
+    private Slider slider;
+    private GameObject panel;
+    private bool isActive;
+
     void Start() {
-        parent = FindObjectOfType<Canvas>().transform.Find("Instances").gameObject;
-        //button.onClick.AddListener(OnClick);
+        isActive = false;
+
+        //parent = FindObjectOfType<Canvas>().transform.Find("Instances").gameObject;
+        button.onClick.AddListener(OnClick);
+        group.SetActive(false);
+        person.SetActive(false);
+        
+        H = group.transform.GetChild(0).GetComponent<Button>();
+        H.onClick.AddListener(OnClickAttribute);
+
+        W = group.transform.GetChild(1).GetComponent<Button>();
+        W.onClick.AddListener(OnClickAttribute);
+
+        B = group.transform.GetChild(2).GetComponent<Button>();
+        B.onClick.AddListener(OnClickAttribute);
+
+        G = group.transform.GetChild(3).GetComponent<Button>();
+        G.onClick.AddListener(OnClickAttribute);
+
+        slider = group.transform.GetChild(4).GetComponent<Slider>();
+        slider.onValueChanged.AddListener(OnValueChanged);
+
+        panel = group.transform.GetChild(5).gameObject;
+
+        run = group.transform.GetChild(6).GetComponent<Button>();
+        run.onClick.AddListener(OnClickRun);
     }
 
     void Update() {
@@ -43,8 +76,11 @@ public class TouchManager : MonoBehaviour {
         }
     }
     void DisplayInfo(Vector3 pos, Info info, string name) {
-        GameObject obj = Instantiate(textPrefab, pos, Quaternion.identity);
-        obj.transform.SetParent(parent.transform);
+        Debug.Log("Display info of " + name);
+        GameObject obj = Instantiate(textPrefab, parent.transform, false);
+        //GameObject obj = Instantiate(textPrefab, pos, Quaternion.identity);
+        
+        obj.transform.position = pos;
         obj.name = name;
 
         var h = obj.transform.GetChild(1);
@@ -52,18 +88,88 @@ public class TouchManager : MonoBehaviour {
         
         h.GetComponentInChildren<Text>().text = info.height + "cm";
         w.GetComponentInChildren<Text>().text = info.weight + "kg";
-
-        h.GetComponent<Button>().onClick.AddListener(OnClickAttribute);
-        w.GetComponent<Button>().onClick.AddListener(OnClickAttribute);
     }
-
-    public void OnClick() {
-        
-    }
-
     void OnClickAttribute() {
         //Instantiate prefab to decide wheter increase/decrease
         //Set current value as pivot value
+        var obj = EventSystem.current.currentSelectedGameObject;
+        Debug.Log("Selected " + obj.name);
+        if (obj.name == "H") {
+            H.interactable = false;
+            W.interactable = true;
 
+            slider.maxValue = maxH;
+            slider.minValue = minH;
+            slider.value = slider.minValue;
+        }
+        else if (obj.name == "W") {
+            H.interactable = true;
+            W.interactable = false;
+
+            slider.maxValue = maxW;
+            slider.minValue = minW;
+            slider.value = slider.minValue;
+        }
+        else if (obj.name == "B") {
+            B.interactable = false;
+            G.interactable = true;
+            
+            person.GetComponentInChildren<MeshRenderer>().material = blue;
+        }
+        else if (obj.name == "G") {
+            B.interactable = true;
+            G.interactable = false;
+
+            person.GetComponentInChildren<MeshRenderer>().material = pink;
+        }
+
+    }
+
+    void OnClick() {
+        var run = FindObjectOfType<ImageRecognition>();
+        if (run.isDone) {
+            Debug.Log("Done");
+            run.result.SetActive(false);
+            run.isDone = false;
+            return;
+        }
+        isActive = !isActive;
+        if(isActive) {
+            person.transform.localScale = new Vector3(minW / 25f, minH / 75f, minW / 25f);
+        }
+        person.SetActive(isActive);
+        group.SetActive(isActive);
+    }
+
+    void OnValueChanged(float value) {
+        Vector3 scale = person.transform.localScale;
+        string text = "" + value;
+        if (!H.interactable) {
+            text += "cm";
+            scale.y = value / 75f;
+        }
+        else {
+            text += "kg";
+            scale.x = value / 25f;
+            scale.z = value / 25f;
+        }
+        panel.GetComponentInChildren<Text>().text = text;
+        person.transform.localScale = scale;
+    }
+
+    void OnClickRun() {
+        var run = FindObjectOfType<ImageRecognition>();
+        OnClick();
+        if (!H.interactable) {
+            if(!B.interactable)
+                run.Run("H", true);
+            else if(!G.interactable)
+                run.Run("H", false);
+        }
+        else if (!W.interactable)
+            if (!B.interactable)
+                run.Run("W", true);
+            else if (!G.interactable)
+                run.Run("W", false);
     }
 }
