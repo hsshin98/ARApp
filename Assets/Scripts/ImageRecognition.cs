@@ -165,7 +165,7 @@ public class ImageRecognition : MonoBehaviour {
             planeGo.GetComponent<MeshRenderer>().material.color = Color.white;
             if(isRunning) {
                 int val = (att == "H") ? info.height : info.weight;
-                if(val >= value)
+                if(val >= value && info.gender == gender)
                     planeGo.GetComponent<MeshRenderer>().material = correct;
                 else 
                     planeGo.GetComponent<MeshRenderer>().material = incorrect;

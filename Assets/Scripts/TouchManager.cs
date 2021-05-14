@@ -59,7 +59,8 @@ public class TouchManager : MonoBehaviour {
                     Debug.Log("hit : " + name);
                     ClearUI();
                     if (name[0] == 'm') {
-                        DisplayInfo(touch, dict[name], name);
+                        if(!isActive)
+                            DisplayInfo(touch, dict[name], name);
                     }
                 }
             }
