@@ -1,6 +1,6 @@
 # ARApp
 ## AR Application for Artificial Inteligence Education
-via ARFoundation with Unity 2020.3.2f1 LTS
+using ARFoundation with Unity 2020.3.2f1 LTS
 
 iOS is not yet supported.
 
