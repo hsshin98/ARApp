@@ -1,0 +1,8 @@
+b0583b1113c14cec93865617a8fdf3a1|Assets/ImageRecognition/augmented-images-earth.jpg
+b2fecd36fc464e64b1f60b5c6769bf5f|Assets/ImageRecognition/moon.jpg
+30314fd9226549c09c3c2f27163bc0d6|Assets/ImageRecognition/thesun.jpg
+8c5ec12b2f194affa136bb5fe796aad6|Assets/ImageRecognition/mars.jpg
+9c1ac2e43db44ae4aa89fc17a5b37b6b|Assets/ImageRecognition/marker1.png
+f8b35a10a2cc439ab2f5b7ac7088fb54|Assets/ImageRecognition/marker2.png
+7388501f5b2448fda33450ef1ec305d7|Assets/ImageRecognition/marker3.png
+0053a757f04147109d12fe09de8594d1|Assets/ImageRecognition/marker4.png

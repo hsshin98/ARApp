@@ -24,6 +24,7 @@ public class ImageRecognition : MonoBehaviour {
     public Dictionary<string, Info> dict;
     public GameObject result;
     public bool isDone;
+    private List<GameObject> goList;
     private int minH, maxH, minW, maxW;
     private int value, done;
     private bool isRunning;
