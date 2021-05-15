@@ -8,9 +8,12 @@ using UnityEngine.XR.ARSubsystems;
 using System;
 
 public struct Info {
+    public const bool Boy = true;
+    public const bool Girl = false;
+
     public int height;
     public int weight;
-    public bool gender;
+    public bool gender; // true for boy, false for girl
 };
 
 public class ImageRecognition : MonoBehaviour {
@@ -24,14 +27,14 @@ public class ImageRecognition : MonoBehaviour {
     public Dictionary<string, Info> dict;
     public GameObject result;
     public bool isDone;
-    private List<GameObject> goList;
     private int minH, maxH, minW, maxW;
-    private int value, done;
+    private int value, done; // start and end values for slider
     private bool isRunning;
     private string att;
     private bool gender;
     private float acc;
     private List<int> list;
+
     void Start() {
         arTrackedImageManager.referenceLibrary = myImageLibrary;
         dict = new Dictionary<string, Info>();
@@ -40,6 +43,95 @@ public class ImageRecognition : MonoBehaviour {
         result.SetActive(false);
     }
 
+    void Update() {
+        
+    }
+
+    
+    public void OnEnable() {
+        arTrackedImageManager.trackedImagesChanged += OnImageChanged;
+    }
+
+    public void OnDisable() {
+        arTrackedImageManager.trackedImagesChanged -= OnImageChanged;
+    }
+    void OnImageChanged(ARTrackedImagesChangedEventArgs args) {
+        foreach (var trackedImage in args.added) {
+            InitTrackable(trackedImage);
+        }
+
+        foreach (var trackedImage in args.updated) {
+            UpdateTrackedInfo(trackedImage);
+        }
+
+        foreach(var trackedImage in args.removed) {
+
+        }
+    }
+    void InitTrackable(ARTrackedImage trackedImage) {
+        var planeGo = trackedImage.transform.GetChild(0).gameObject;
+        var personGo = trackedImage.transform.GetChild(1).gameObject;
+        var name = trackedImage.referenceImage.name;
+        var info = dict[name];
+
+        personGo.transform.GetChild(0).gameObject.name = name;
+        personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? blue : pink;
+
+        planeGo.GetComponent<MeshRenderer>().material.color = Color.white;
+
+        // Set scale
+        Vector3 scale = new Vector3(info.weight / 25f, info.height / 75f, info.weight / 25f);
+        personGo.transform.localScale = scale;
+    }
+    void RemoveTrackable(ARTrackedImage trackedImage) {
+        
+    }
+    void UpdateTrackedInfo(ARTrackedImage trackedImage) {        
+        var planeGo = trackedImage.transform.GetChild(0).gameObject;
+        var personGo = trackedImage.transform.GetChild(1).gameObject;
+        var name = trackedImage.referenceImage.name;
+        var info = dict[name];
+
+        // Disable the visual plane if it is not being tracked
+        if (trackedImage.trackingState == TrackingState.Tracking) {
+            planeGo.SetActive(true);
+            personGo.SetActive(true);
+
+            // Set name
+            //personGo.transform.GetChild(0).gameObject.name = name;
+
+            // Set texture
+            //personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? blue : pink;
+
+            // Set plane color
+            //planeGo.GetComponent<MeshRenderer>().material.color = Color.white;
+            if(isRunning) {
+                int val = (att == "H") ? info.height : info.weight;
+                if(val >= value && info.gender == gender)
+                    planeGo.GetComponent<MeshRenderer>().material = correct;
+                else 
+                    planeGo.GetComponent<MeshRenderer>().material = incorrect;
+            }
+            // Set scale
+            //Vector3 scale = new Vector3(info.weight / 25f, info.height / 75f, info.weight / 25f);
+            //personGo.transform.localScale = scale;
+        }
+        else {
+            planeGo.SetActive(false);
+            personGo.SetActive(false);
+        }
+    }
+    //----------------------------------//
+    //          highlighing             //
+    //----------------------------------//
+
+    public void Highlight(int att, int comp, int gender) {
+
+    }
+
+    //----------------------------------//
+    //      learning algorithm          //
+    //----------------------------------//
     public void Run(string attribute, bool g) {
         var slider = result.GetComponentInChildren<Slider>();
         result.SetActive(true);
@@ -61,9 +153,6 @@ public class ImageRecognition : MonoBehaviour {
         }
         InvokeRepeating("Evaluate", 0, 0.1f);
     }
-    void Update() {
-        
-    }
     void Evaluate() {
         float res, correct = 0.0f;
         string str = att + "eight greater than " + value + " is ";
@@ -72,7 +161,7 @@ public class ImageRecognition : MonoBehaviour {
         foreach (var p in dict) {
             var i = p.Value;
             int val = 0;
-            
+
             if (att == "H")
                 val = i.height;
             else if (att == "W")
@@ -85,13 +174,13 @@ public class ImageRecognition : MonoBehaviour {
         }
         res = correct / dict.Count * 100;
 
-        if(res > acc) {
+        if (res > acc) {
             //reset list and update optimal
             acc = res;
             list = new List<int>();
             list.Add(value);
         }
-        else if(res == acc) {
+        else if (res == acc) {
             //add to optimal values
             list.Add(value);
         }
@@ -100,11 +189,11 @@ public class ImageRecognition : MonoBehaviour {
         result.transform.GetChild(2).GetComponent<Text>().text = "" + res + "%";
         result.transform.GetChild(3).GetComponent<Text>().text = str;
         ++value;
-        
+
         if (value > done) {
             InvokeRepeating("Finish", 0.1f, 1f);
         }
-            
+
         return;
     }
 
@@ -128,59 +217,9 @@ public class ImageRecognition : MonoBehaviour {
 
         isDone = true;
     }
-    public void OnEnable() {
-        arTrackedImageManager.trackedImagesChanged += OnImageChanged;
-    }
 
-    public void OnDisable() {
-        arTrackedImageManager.trackedImagesChanged -= OnImageChanged;
-    }
-    public void OnImageChanged(ARTrackedImagesChangedEventArgs args) {
-        foreach (var trackedImage in args.added) {
-            UpdateInfo(trackedImage);
-        }
 
-        foreach (var trackedImage in args.updated) {
-            UpdateInfo(trackedImage);
-        }
-    }
-
-    void UpdateInfo(ARTrackedImage trackedImage) {        
-        var planeGo = trackedImage.transform.GetChild(0).gameObject;
-        var personGo = trackedImage.transform.GetChild(1).gameObject;
-        var name = trackedImage.referenceImage.name;
-        var info = dict[name];
-
-        // Disable the visual plane if it is not being tracked
-        if (trackedImage.trackingState == TrackingState.Tracking) {
-            planeGo.SetActive(true);
-            personGo.SetActive(true);
-
-            // Set name
-            personGo.transform.GetChild(0).gameObject.name = name;
-
-            // Set texture
-            personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? blue : pink;
-
-            // Set plane color
-            planeGo.GetComponent<MeshRenderer>().material.color = Color.white;
-            if(isRunning) {
-                int val = (att == "H") ? info.height : info.weight;
-                if(val >= value && info.gender == gender)
-                    planeGo.GetComponent<MeshRenderer>().material = correct;
-                else 
-                    planeGo.GetComponent<MeshRenderer>().material = incorrect;
-            }
-            // Set scale
-            Vector3 scale = new Vector3(info.weight / 25f, info.height / 75f, info.weight / 25f);
-            personGo.transform.localScale = scale;
-        }
-        else {
-            planeGo.SetActive(false);
-            personGo.SetActive(false);
-        }
-    }
-
+    //Parsing Data
     void ParseInfo() {
         int index = 1;
         var splitFile = new string[] { "\r\n", "\r", "\n" };
@@ -189,23 +228,30 @@ public class ImageRecognition : MonoBehaviour {
         foreach (string s in d) {
             Info input;
             inp = s.Split(' ');
-            if(int.Parse(inp[0]) == -1)
+            if (int.Parse(inp[0]) == -1)
                 break;
             string name = "m" + index;
             input.height = int.Parse(inp[1]);
             input.weight = int.Parse(inp[2]);
-            input.gender = (inp[3] == "남자") ? true : false;
+            input.gender = (inp[3] == "남자") ? Info.Boy : Info.Girl;
             dict.Add(name, input);
             ++index;
             Debug.Log("Parsed " + name);
         }
 
+        //parse bounds
+        minH = int.Parse(inp[1]);
+        maxH = int.Parse(inp[2]);
+        minW = int.Parse(inp[3]);
+        maxW = int.Parse(inp[4]);
+
+        //give info to highlighter
+        var gh = FindObjectOfType<GroupHighlight>();
+        Debug.Log(gh.name);
+        gh.dict = dict;
+        gh.SetBounds(minH, maxH, minW, maxW);
         //give info to touchmanager
         var tm = FindObjectOfType<TouchManager>();
         tm.dict = dict;
-        tm.minH = minH = int.Parse(inp[1]);
-        tm.maxH = maxH = int.Parse(inp[2]);
-        tm.minW = minW = int.Parse(inp[3]);
-        tm.maxW = maxW = int.Parse(inp[4]);
     }
 }

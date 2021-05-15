@@ -1,3 +1,0 @@
-912bf0fd14d44ba59c90730010cf983b|Assets/ImageRecognition/unitylogowhiteonblack.jpg
-99f3b5ba6cc3458abb52657bc4f9c82d|Assets/ImageRecognition/lily1.jpg
-75838c3579ab4c6d91385fc70f63fcaf|Assets/ImageRecognition/lily2.jpg
