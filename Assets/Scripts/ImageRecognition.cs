@@ -61,19 +61,20 @@ public class ImageRecognition : MonoBehaviour {
         }
 
         foreach (var trackedImage in args.updated) {
-            UpdateTrackedInfo(trackedImage);
+            UpdateTrackable(trackedImage);
         }
 
         foreach(var trackedImage in args.removed) {
-
+            Debug.Log("Removed");
         }
+        //Debug.Log("count:" + arTrackedImageManager.trackables.count);
     }
     void InitTrackable(ARTrackedImage trackedImage) {
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
         var personGo = trackedImage.transform.GetChild(1).gameObject;
         var name = trackedImage.referenceImage.name;
         var info = dict[name];
-
+        Debug.Log("Init trackable: " + name);
         personGo.transform.GetChild(0).gameObject.name = name;
         personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? blue : pink;
 
@@ -82,11 +83,10 @@ public class ImageRecognition : MonoBehaviour {
         // Set scale
         Vector3 scale = new Vector3(info.weight / 25f, info.height / 75f, info.weight / 25f);
         personGo.transform.localScale = scale;
+
+        // Instantiate Object Button
     }
-    void RemoveTrackable(ARTrackedImage trackedImage) {
-        
-    }
-    void UpdateTrackedInfo(ARTrackedImage trackedImage) {        
+    void UpdateTrackable(ARTrackedImage trackedImage) {        
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
         var personGo = trackedImage.transform.GetChild(1).gameObject;
         var name = trackedImage.referenceImage.name;
@@ -97,14 +97,6 @@ public class ImageRecognition : MonoBehaviour {
             planeGo.SetActive(true);
             personGo.SetActive(true);
 
-            // Set name
-            //personGo.transform.GetChild(0).gameObject.name = name;
-
-            // Set texture
-            //personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? blue : pink;
-
-            // Set plane color
-            //planeGo.GetComponent<MeshRenderer>().material.color = Color.white;
             if(isRunning) {
                 int val = (att == "H") ? info.height : info.weight;
                 if(val >= value && info.gender == gender)
@@ -112,21 +104,14 @@ public class ImageRecognition : MonoBehaviour {
                 else 
                     planeGo.GetComponent<MeshRenderer>().material = incorrect;
             }
-            // Set scale
-            //Vector3 scale = new Vector3(info.weight / 25f, info.height / 75f, info.weight / 25f);
-            //personGo.transform.localScale = scale;
         }
         else {
             planeGo.SetActive(false);
             personGo.SetActive(false);
         }
     }
-    //----------------------------------//
-    //          highlighing             //
-    //----------------------------------//
-
-    public void Highlight(int att, int comp, int gender) {
-
+    void RemoveTrackable(ARTrackedImage trackedImage) {
+        //should able manual placement via plane detection
     }
 
     //----------------------------------//
@@ -247,7 +232,6 @@ public class ImageRecognition : MonoBehaviour {
 
         //give info to highlighter
         var gh = FindObjectOfType<GroupHighlight>();
-        Debug.Log(gh.name);
         gh.dict = dict;
         gh.SetBounds(minH, maxH, minW, maxW);
         //give info to touchmanager

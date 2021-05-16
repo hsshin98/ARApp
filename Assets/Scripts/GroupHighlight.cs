@@ -20,10 +20,11 @@ public class GroupHighlight : MonoBehaviour {
     private Button att, comp, gender, run;
     private Slider slider;
     private GameObject panel;
-    private bool isActive;
+    private bool isActive, isHighlighted;
     public Dictionary<string, Info> dict;
     void Start() {
         isActive = false;
+        isHighlighted = false;
 
         button.onClick.AddListener(OnClick);
         person.SetActive(false);
@@ -31,6 +32,11 @@ public class GroupHighlight : MonoBehaviour {
         selAttribute = -1;
         selComp = -1;
         selGender = 0;
+
+        minH = 90;
+        maxH = 190;
+        minW = 20;
+        maxW = 100;
 
         //initialize objects
         foreach(Transform child in transform) {
@@ -65,6 +71,8 @@ public class GroupHighlight : MonoBehaviour {
                     break;
             }
         }
+
+        Debug.Log("count:" + arTrackedImageManager.trackables.count);
     }
 
     void Update() {
@@ -72,10 +80,12 @@ public class GroupHighlight : MonoBehaviour {
     }
 
     public void SetBounds(int minh, int maxh, int minw, int maxw) {
+        /*
         minH = minh;
         maxH = maxh;
         minW = minw;
         maxW = maxw;
+        */
         gameObject.SetActive(false);
         Debug.Log("bounds set: " + minH + "~" + maxH);
     }
@@ -87,8 +97,8 @@ public class GroupHighlight : MonoBehaviour {
             obj.GetComponentInChildren<Text>().text = "키";
             selAttribute = 1;
 
-            slider.maxValue = maxH;
-            slider.minValue = minH;
+            slider.maxValue = maxH * 10;
+            slider.minValue = minH * 10;
             slider.value = slider.minValue;
         }
         else if(selAttribute != 2) {
@@ -96,8 +106,8 @@ public class GroupHighlight : MonoBehaviour {
             obj.GetComponentInChildren<Text>().text = "몸무게";
             selAttribute = 2;
 
-            slider.maxValue = maxW;
-            slider.minValue = minW;
+            slider.maxValue = maxW * 10;
+            slider.minValue = minW * 10;
             slider.value = slider.minValue;
         }
     }
@@ -139,32 +149,30 @@ public class GroupHighlight : MonoBehaviour {
     }
 
     void OnClick() {
-        var run = FindObjectOfType<ImageRecognition>();
-        if (run.isDone) {
-            Debug.Log("Done");
-            run.result.SetActive(false);
-            run.isDone = false;
+        if(isHighlighted) {
+            isHighlighted = false;
+            DisableHighlight();
             return;
         }
+
         isActive = !isActive;
-        if (isActive) {
+        if (isActive)
             person.transform.localScale = new Vector3(minW / 25f, minH / 75f, minW / 25f);
-        }
         person.SetActive(isActive);
         gameObject.SetActive(isActive);
     }
 
     void OnValueChanged(float value) {
         Vector3 scale = person.transform.localScale;
-        string text = "" + value;
+        string text = "" + value / 10f;
         if (selAttribute == 1) {
             text += "cm";
-            scale.y = value / 75f;
+            scale.y = value / 750f;
         }
         else {
             text += "kg";
-            scale.x = value / 25f;
-            scale.z = value / 25f;
+            scale.x = value / 250f;
+            scale.z = value / 250f;
         }
         panel.GetComponentInChildren<Text>().text = text;
         person.transform.localScale = scale;
@@ -174,32 +182,60 @@ public class GroupHighlight : MonoBehaviour {
         if (selAttribute != -1 && selComp != -1 && selGender != -1) {
             Debug.Log("Highlight");
             Highlight();
+            InitButton();
         }
     }
 
     void InitButton() {
+        att.GetComponentInChildren<Text>().text = "키/\n몸무게";
+        comp.GetComponentInChildren<Text>().text = "이상/\n이하";
+        gender.GetComponentInChildren<Text>().text = "남자/여자";
 
+        selAttribute = -1;
+        selComp = -1;
+        selGender = 0;
+        person.GetComponentInChildren<MeshRenderer>().material = both;
+
+        slider.value = slider.minValue;
+        panel.GetComponentInChildren<Text>().text = "";
     }
 
     void Highlight() {
-        foreach(var trackedImage in arTrackedImageManager.trackables) {
-            SetTransparent(trackedImage);
+        int value = (int)slider.value;
+        Debug.Log("Att: " + selAttribute + ", Gen: " + selGender + "selComp: " + selComp);
+        foreach (var trackedImage in arTrackedImageManager.trackables) {
+            var personGo = trackedImage.transform.GetChild(1).gameObject;
+            var name = personGo.transform.GetChild(0).name;
+            var info = dict[name];
+            Material mat = info.gender ? boyTransparent : girlTransparent;
+            if (selGender == 0 || (selGender == 1 && info.gender == Info.Boy) || (selGender == 2 && info.gender == Info.Girl)) {
+                if (selAttribute == 1) {     // height
+                    if ((selComp == 1 && info.height * 10 < value) || (selComp == 2 && info.height * 10 > value)) {
+                        personGo.GetComponentInChildren<MeshRenderer>().material = mat;
+                    }
+                }
+                else if (selAttribute == 2) {// weight
+                    if ((selComp == 1 && info.weight * 10 < value) || (selComp == 2 && info.weight * 10 > value)) {
+                        personGo.GetComponentInChildren<MeshRenderer>().material = mat;
+                    }
+                }
+            }
+            else if((selGender == 2 && info.gender == Info.Boy) || (selGender == 1 && info.gender == Info.Girl)) {
+                personGo.GetComponentInChildren<MeshRenderer>().material = mat;
+            }
+            
         }
+        OnClick();
+        isHighlighted = true;
     }
 
-    void SetTransparent(ARTrackedImage trackedImage) {
-        var personGo = trackedImage.transform.GetChild(1).gameObject;
-        var name = personGo.transform.GetChild(0).name;
-        var mat = dict[name].gender ? boyTransparent : girlTransparent;
-        
-        personGo.GetComponentInChildren<MeshRenderer>().material = mat;
-    }
+    void DisableHighlight() {
+        foreach (var trackedImage in arTrackedImageManager.trackables) {
+            var personGo = trackedImage.transform.GetChild(1).gameObject;
+            var name = personGo.transform.GetChild(0).name;
+            var info = dict[name];
 
-    void SetOpaque(ARTrackedImage trackedImage) {
-        var personGo = trackedImage.transform.GetChild(1).gameObject;
-        var name = personGo.transform.GetChild(0).name;
-        var mat = dict[name].gender ? boy : girl;
-
-        personGo.GetComponentInChildren<MeshRenderer>().material = mat;
+            personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? boy : girl;
+        }
     }
 }
