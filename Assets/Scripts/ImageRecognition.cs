@@ -34,6 +34,10 @@ public class ImageRecognition : MonoBehaviour {
     private bool gender;
     private float acc;
     private List<int> list;
+    private PlacementManager pm;
+    private void Awake() {
+        pm = FindObjectOfType<PlacementManager>();
+    }
 
     void Start() {
         arTrackedImageManager.referenceLibrary = myImageLibrary;
@@ -46,7 +50,6 @@ public class ImageRecognition : MonoBehaviour {
     void Update() {
         
     }
-
     
     public void OnEnable() {
         arTrackedImageManager.trackedImagesChanged += OnImageChanged;
@@ -67,7 +70,6 @@ public class ImageRecognition : MonoBehaviour {
         foreach(var trackedImage in args.removed) {
             Debug.Log("Removed");
         }
-        //Debug.Log("count:" + arTrackedImageManager.trackables.count);
     }
     void InitTrackable(ARTrackedImage trackedImage) {
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
@@ -75,6 +77,7 @@ public class ImageRecognition : MonoBehaviour {
         var name = trackedImage.referenceImage.name;
         var info = dict[name];
         Debug.Log("Init trackable: " + name);
+        personGo.name = name;
         personGo.transform.GetChild(0).gameObject.name = name;
         personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? blue : pink;
 
@@ -85,6 +88,7 @@ public class ImageRecognition : MonoBehaviour {
         personGo.transform.localScale = scale;
 
         // Instantiate Object Button
+        pm.InstantiateButton(trackedImage);
     }
     void UpdateTrackable(ARTrackedImage trackedImage) {        
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
