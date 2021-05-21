@@ -3197,7 +3197,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arTrackedImageManager: {fileID: 1729843561}
-  myImageLibrary: {fileID: 11400000, guid: bb81b8826c0367b4aa1f828fe006689c, type: 2}
+  myImageLibrary: {fileID: 11400000, guid: 31e83076f7ac1314b85dabc46642ea8d, type: 2}
   textfile: {fileID: 4900000, guid: 0977616122da43246b64c6ace010a187, type: 3}
   blue: {fileID: 2100000, guid: 74214bfef4b2c554a9bb1e9efe3d26eb, type: 2}
   pink: {fileID: 2100000, guid: 1144c477edcd68045b776f702921b2f6, type: 2}

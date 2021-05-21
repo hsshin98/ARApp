@@ -27,7 +27,7 @@ public class PlacementManager : MonoBehaviour {
         arRaycastManager = GetComponent<ARRaycastManager>();
         arTrackedImageManager = GetComponent<ARTrackedImageManager>();
         arPlaneManager = GetComponent<ARPlaneManager>();
-        arPlaneManager.enabled = false;
+        //arPlaneManager.enabled = false;
         Debug.Log("Awake");
         
     }
@@ -109,7 +109,9 @@ public class PlacementManager : MonoBehaviour {
 
     void Update() {
         if(isActive) {
-            arPlaneManager.enabled = true;
+            foreach (var plane in arPlaneManager.trackables) {
+                plane.gameObject.SetActive(false);
+            }
         }
         else {
             foreach (var plane in arPlaneManager.trackables) {

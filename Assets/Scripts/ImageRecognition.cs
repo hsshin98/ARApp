@@ -75,6 +75,12 @@ public class ImageRecognition : MonoBehaviour {
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
         var personGo = trackedImage.transform.GetChild(1).gameObject;
         var name = trackedImage.referenceImage.name;
+        
+        if(name[0] == 'q') {
+            Debug.Log("non object marker detected");
+            return;
+        }
+        
         var info = dict[name];
         Debug.Log("Init trackable: " + name);
         personGo.name = name;

@@ -1,0 +1,177 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
+  m_Name: QRLibrary
+  m_EditorClassIdentifier: 
+  m_GuidLow: 4699020598312489947
+  m_GuidHigh: 5573057166280245651
+  m_Images:
+  - m_SerializedGuid:
+      m_GuidLow: 5455577518581436127
+      m_GuidHigh: 7487049765304659386
+    m_SerializedTextureGuid:
+      m_GuidLow: 474020507093906666
+      m_GuidHigh: 3309307105624040427
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m1
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5338092438606750551
+      m_GuidHigh: 17664016617918041532
+    m_SerializedTextureGuid:
+      m_GuidLow: 2050430211848649012
+      m_GuidHigh: 13905829874100550906
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m2
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5026045086711795420
+      m_GuidHigh: 2324830542664435353
+    m_SerializedTextureGuid:
+      m_GuidLow: 2311640802266515610
+      m_GuidHigh: 8834287730545848955
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m3
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4869517211090958028
+      m_GuidHigh: 10104452443803822464
+    m_SerializedTextureGuid:
+      m_GuidLow: 17191401232296485583
+      m_GuidHigh: 1953521250408630952
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m4
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5329432098851220883
+      m_GuidHigh: 15150161393651829122
+    m_SerializedTextureGuid:
+      m_GuidLow: 1464957442729463396
+      m_GuidHigh: 15055784332681238506
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m5
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5589756370395359194
+      m_GuidHigh: 12102389694378772608
+    m_SerializedTextureGuid:
+      m_GuidLow: 1631473948988852837
+      m_GuidHigh: 1887543020270789194
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m6
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5422855924985698342
+      m_GuidHigh: 9371122621605300627
+    m_SerializedTextureGuid:
+      m_GuidLow: 708241651725275336
+      m_GuidHigh: 8208852387119438328
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m7
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4711293836214751820
+      m_GuidHigh: 4208110993123816111
+    m_SerializedTextureGuid:
+      m_GuidLow: 154331889117011588
+      m_GuidHigh: 3259014501838038826
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m8
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4633273881938881817
+      m_GuidHigh: 14714530513464383925
+    m_SerializedTextureGuid:
+      m_GuidLow: 6545078254544905561
+      m_GuidHigh: 5683933691017471962
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m9
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5698116629712868503
+      m_GuidHigh: 3936619550493283223
+    m_SerializedTextureGuid:
+      m_GuidLow: 7954712151627613640
+      m_GuidHigh: 10585294767859986858
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: m10
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4853623606817376364
+      m_GuidHigh: 13044748050551794840
+    m_SerializedTextureGuid:
+      m_GuidLow: 17303982213524812492
+      m_GuidHigh: 9531551369559266744
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: qrgt
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4650604263632713677
+      m_GuidHigh: 13332381019241762726
+    m_SerializedTextureGuid:
+      m_GuidLow: 2802573816417887031
+      m_GuidHigh: 9665131069559996505
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: qrh
+    m_Texture: {fileID: 2800000, guid: 90662337be0926e45900b7ec7f712186, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5089924721892952038
+      m_GuidHigh: 16438626287512155071
+    m_SerializedTextureGuid:
+      m_GuidLow: 17015793386334859319
+      m_GuidHigh: 319830972446577448
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: qrlt
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5535784294962833373
+      m_GuidHigh: 2568199526321835709
+    m_SerializedTextureGuid:
+      m_GuidLow: 13480670535907802524
+      m_GuidHigh: 18199790273066978363
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: qrw
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5296717799745234623
+      m_GuidHigh: 5548978194427796126
+    m_SerializedTextureGuid:
+      m_GuidLow: 7026868822832238261
+      m_GuidHigh: 15145767843299267178
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: qrinc
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5113484880323460515
+      m_GuidHigh: 18422587737264026759
+    m_SerializedTextureGuid:
+      m_GuidLow: 235440661907003447
+      m_GuidHigh: 14948889063047850073
+    m_Size: {x: 0.1, y: 0.1}
+    m_SpecifySize: 1
+    m_Name: qrdec
+    m_Texture: {fileID: 0}
