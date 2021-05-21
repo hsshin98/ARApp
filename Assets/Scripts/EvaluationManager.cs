@@ -7,125 +7,98 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 public class EvaluationManager : MonoBehaviour {
-    [SerializeField]
-    ARTrackedImageManager arTrackedImageManager;
-    [SerializeField]
-    XRReferenceImageLibrary myImageLibrary;
-    public TextAsset textfile;
-    public Material blue, pink;
-    public Material correct, incorrect;
-    public Dictionary<string, Info> dict;
-    public GameObject result;
-    public bool isDone;
-    private int minH, maxH, minW, maxW;
-    private int value, done; // start and end values for slider
-    private bool isRunning;
-    private string att;
-    private bool gender;
-    private float acc;
-    private List<int> list;
-    private PlacementManager pm;
+    public Button run;
+
+    private GameObject AttFrame, CompFrame, GenFrame;
+    private bool isActive;
+    private ARRaycastManager arRaycastManager;
+    private ARTrackedImageManager arTrackedImageManager;
+    private Dictionary<string, Info> dict;
+    private GameObject pivot;
+    private int selAtt, selComp, selGen;
+
     private void Awake() {
-        pm = FindObjectOfType<PlacementManager>();
+        arRaycastManager = FindObjectOfType<ARRaycastManager>();
         arTrackedImageManager = FindObjectOfType<ARTrackedImageManager>();
+
+        pivot = transform.GetChild(0).gameObject;
     }
 
     void Start() {
-        dict = new Dictionary<string, Info>();
-        isRunning = false;
-        result.SetActive(false);
+        pivot.SetActive(false);
+
+        run.onClick.AddListener(OnClickRun);
+        AttFrame = pivot.transform.GetChild(0).gameObject;
+        CompFrame = pivot.transform.GetChild(1).gameObject;
+        GenFrame = pivot.transform.GetChild(2).gameObject;
     }
 
     void Update() {
+        if (isActive) {
+            Ray rayatt = Camera.main.ScreenPointToRay(AttFrame.transform.position);
+            RaycastHit hitatt;
+            string atttext = "";
+            if(Physics.Raycast(rayatt, out hitatt, Mathf.Infinity)) {
+                var other = hitatt.collider.gameObject;
+                if (other.name == "qrh") {
+                    selAtt = 1;
+                }
+                else if (other.name == "qrw") {
+                    selAtt = 2;
+                }
+                else {
+                    //invalid hit
+                    selAtt = -1;
+                    atttext += "키 / 몸무게";
+                }
+            }
+            else {
+                selAtt = -1;
+                atttext += "키 / 몸무게";
+            }
+            AttFrame.GetComponentInChildren<Text>().text = atttext;
 
+            Ray raycomp = Camera.main.ScreenPointToRay(CompFrame.transform.position);
+            RaycastHit hitcomp;
+            string comptext = "";
+            if (Physics.Raycast(raycomp, out hitcomp, Mathf.Infinity)) {
+                var other = hitcomp.collider.gameObject;
+                if (other.name == "qrgt") {
+                    selComp = 1;
+                }
+                else if (other.name == "qrlt") {
+                    selComp = 2;
+                }
+                else {
+                    //invalid hit
+                    selAtt = -1;
+                    comptext += "크다 / 작다";
+                }
+            }
+            else {
+                selAtt = -1;
+                comptext += "크다 / 작다";
+            }
+            CompFrame.GetComponentInChildren<Text>().text = comptext;
+
+        }
+            
     }
 
-    //----------------------------------//
-    //      learning algorithm          //
-    //----------------------------------//
-    public void Run(string attribute, bool g) {
-        var slider = result.GetComponentInChildren<Slider>();
-        result.SetActive(true);
-        isRunning = true;
-        att = attribute;
-        gender = g;
-        acc = -1.0f;
-        if (attribute == "H") {
-            value = minH;
-            done = maxH;
-            slider.minValue = minH;
-            slider.maxValue = maxH;
+    void RunEval() {
+
+    }
+    void OnClickRun() {
+        //set pivot
+        if (!isActive) {
+            isActive = true;
+            pivot.SetActive(true);
         }
         else {
-            value = minW;
-            done = maxW;
-            slider.minValue = minW;
-            slider.maxValue = maxW;
+            isActive = false;
+            pivot.SetActive(false);
+            AttFrame.GetComponentInChildren<Text>().text = "키 / 몸무게";
+            CompFrame.GetComponentInChildren<Text>().text = "크다 / 작다";
         }
-        InvokeRepeating("Evaluate", 0, 0.1f);
-    }
-    void Evaluate() {
-        float res, correct = 0.0f;
-        string str = att + "eight greater than " + value + " is ";
-        str += gender ? "Boy" : "Girl";
-        result.GetComponentInChildren<Slider>().value = value;
-        foreach (var p in dict) {
-            var i = p.Value;
-            int val = 0;
-
-            if (att == "H")
-                val = i.height;
-            else if (att == "W")
-                val = i.weight;
-
-            if (val >= value && i.gender == gender)
-                correct += 1.0f;
-            else if (val < value && i.gender != gender)
-                correct += 1.0f;
-        }
-        res = correct / dict.Count * 100;
-
-        if (res > acc) {
-            //reset list and update optimal
-            acc = res;
-            list = new List<int>();
-            list.Add(value);
-        }
-        else if (res == acc) {
-            //add to optimal values
-            list.Add(value);
-        }
-
-        //display result
-        result.transform.GetChild(2).GetComponent<Text>().text = "" + res + "%";
-        result.transform.GetChild(3).GetComponent<Text>().text = str;
-        ++value;
-
-        if (value > done) {
-            InvokeRepeating("Finish", 0.1f, 1f);
-        }
-
-        return;
-    }
-
-    void Finish() {
-        //finish evaluation
-        float avg = 0.0f;
-        float optimal;
-        isRunning = false;
-        CancelInvoke();
-
-        //get optimal value
-        foreach (int i in list)
-            avg += i;
-        optimal = avg / list.Count;
-
-        string str = att + "eight greater than " + optimal + " is ";
-        str += gender ? "Boy" : "Girl";
-
-        result.transform.GetChild(2).GetComponent<Text>().text = "" + acc + "%";
-        result.transform.GetChild(3).GetComponent<Text>().text = str;
-
-        isDone = true;
     }
 }

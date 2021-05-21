@@ -36,6 +36,11 @@ public class PlacementManager : MonoBehaviour {
         isActive = false;
         target.SetActive(false);
         button.onClick.AddListener(onClick);
+
+
+        //disabled due to plane detection quality
+        this.enabled = false;
+        arPlaneManager.enabled = false;
     }
     bool TryGetTouchPosition(out Vector2 touchPosition) {
         if(Input.touchCount > 0) {

@@ -10,6 +10,10 @@ using System;
 public struct Info {
     public const bool Boy = true;
     public const bool Girl = false;
+    public const int minH = 90;
+    public const int maxH = 180;
+    public const int minW = 20;
+    public const int maxW = 100;
 
     public int height;
     public int weight;
@@ -24,6 +28,7 @@ public class ImageRecognition : MonoBehaviour {
     public TextAsset textfile;
     public Material blue, pink;
     public Material correct, incorrect;
+    public Material height, weight, lt, gt;
     public Dictionary<string, Info> dict;
     public GameObject result;
     public bool isDone;
@@ -71,6 +76,7 @@ public class ImageRecognition : MonoBehaviour {
             Debug.Log("Removed");
         }
     }
+
     void InitTrackable(ARTrackedImage trackedImage) {
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
         var personGo = trackedImage.transform.GetChild(1).gameObject;
@@ -78,6 +84,26 @@ public class ImageRecognition : MonoBehaviour {
         
         if(name[0] == 'q') {
             Debug.Log("non object marker detected");
+            personGo.SetActive(false);
+            planeGo.name = name;
+            switch(name) {
+                case "qrw":
+                    planeGo.GetComponent<MeshRenderer>().material = weight;
+                    break;
+                case "qrh":
+                    planeGo.GetComponent<MeshRenderer>().material = height;
+                    break;
+                case "qrlt":
+                    planeGo.GetComponent<MeshRenderer>().material = lt;
+                    break;
+                case "qrgt":
+                    planeGo.GetComponent<MeshRenderer>().material = gt;
+                    break;
+                case "qrinc":
+                    break;
+                case "qrdec":
+                    break;
+            }
             return;
         }
         
@@ -100,14 +126,25 @@ public class ImageRecognition : MonoBehaviour {
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
         var personGo = trackedImage.transform.GetChild(1).gameObject;
         var name = trackedImage.referenceImage.name;
+
+        if(name[0] == 'q') {
+            if(trackedImage.trackingState == TrackingState.Tracking) {
+                planeGo.SetActive(true);
+            }
+            else {
+                planeGo.SetActive(false);
+            }
+            return;
+        }
+
         var info = dict[name];
 
         // Disable the visual plane if it is not being tracked
-        if (trackedImage.trackingState == TrackingState.Tracking) {
-            planeGo.SetActive(true);
+        if (trackedImage.trackingState == TrackingState.Tracking) { 
             personGo.SetActive(true);
+            planeGo.SetActive(true);
 
-            if(isRunning) {
+            if (isRunning) {
                 int val = (att == "H") ? info.height : info.weight;
                 if(val >= value && info.gender == gender)
                     planeGo.GetComponent<MeshRenderer>().material = correct;
