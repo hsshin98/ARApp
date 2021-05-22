@@ -30,6 +30,7 @@ struct Object {
 
 public class EvaluationManager : MonoBehaviour {
     public Button learnButton;
+    public GameObject panelPrefab;
 
     private State state;
     private Button run, runLearn;
@@ -43,6 +44,8 @@ public class EvaluationManager : MonoBehaviour {
     private List<Object> list;
     private int currVal, interval;
 
+    private GameObject panelParent;
+
     private void Awake() {
         arTrackedImageManager = FindObjectOfType<ARTrackedImageManager>();
         pivot = transform.GetChild(0).gameObject;
@@ -50,6 +53,9 @@ public class EvaluationManager : MonoBehaviour {
     }
 
     void Start() {
+        dict = FindObjectOfType<ImageRecognition>().dict;
+        list = new List<Object>();
+
         //pivot
         pivot.SetActive(false);
 
@@ -68,11 +74,14 @@ public class EvaluationManager : MonoBehaviour {
         //learn
         learn.SetActive(false);
         IncFrame = learn.transform.GetChild(0).gameObject;
+
         sliderLearn = learn.transform.GetChild(1).GetComponent<Slider>();
         sliderLearn.onValueChanged.AddListener(OnValueChangedLearn);
 
         runLearn = learn.transform.GetComponentInChildren<Button>();
         runLearn.onClick.AddListener(OnClickRunLearn);
+
+        panelParent = transform.GetChild(2).gameObject;
     }
     int CheckValid(GameObject frame, int type) {
         Ray ray = Camera.main.ScreenPointToRay(frame.transform.position);
@@ -180,12 +189,34 @@ public class EvaluationManager : MonoBehaviour {
         }
         else if(state == State.Learn) {
             selInc = CheckValid(IncFrame, 4);
+            
             if(selInc > 0) {
+                sliderLearn.interactable = true;
+            }
+            else {
+                sliderLearn.interactable = false;
+            }
+
+            if(selInc > 0 && sliderLearn.value > 0) {
                 runLearn.gameObject.SetActive(true);
             }
             else {
                 runLearn.gameObject.SetActive(false);
             }
+        }
+        else if(state == State.Learning) {
+            foreach(Transform child in panelParent.transform) {
+                foreach(var o in list) {
+                    if(child.name == o.name) {
+                        var plane = o.obj.transform.GetChild(0);
+                        child.position = Camera.main.WorldToScreenPoint(plane.position);
+                        child.gameObject.SetActive(plane.gameObject.activeSelf);
+                        break;
+                    }
+                }
+            }
+        }
+        else if(state == State.Done) {
 
         }
     }
@@ -201,7 +232,18 @@ public class EvaluationManager : MonoBehaviour {
     }
 
     void OnValueChangedLearn(float value) {
+        string unit = (selAtt == Info.H) ? "cm" : "kg";
+        string str = "";
+        if (selInc == Info.inc)
+            str = "증가";
+        else if(selInc == Info.dec)
+            str = "감소";
+        float v = value / 10f;
+        float s = sliderLearn.value / 10f;
 
+        string text = v + unit + "부터" + s + "씩 " + str + " 하면서 최적값 찾기";
+
+        learn.transform.GetChild(2).GetComponent<Text>().text = text;
     }
 
     void OnClickLearn() {
@@ -217,7 +259,8 @@ public class EvaluationManager : MonoBehaviour {
             CompFrame.GetComponentInChildren<Text>().text = "크다 / 작다";
         }
         else if(state == State.Learn) {
-
+            state = State.Ready;
+            learn.SetActive(false);
         }
     }
 
@@ -226,52 +269,111 @@ public class EvaluationManager : MonoBehaviour {
             OnClickLearn();
             state = State.Learn;
             learn.SetActive(true);
-            Eval(selAtt, selComp, selGen, slider.value);
+            Eval();
         }
     }
-
-    void Eval(int att, int comp, int gen, float val) {
-        //register inputs
-        foreach (var trackedImage in arTrackedImageManager.trackables) {
-            var name = trackedImage.referenceImage.name;
-            if (name[0] == 'm') {
-                var info = dict[name];
-                int i = (att == Info.H) ? info.height : info.weight;
-                Object obj = new Object(trackedImage, i, info.gender);
-                list.Add(obj);
-            }
-        }
-    }
-
-    void EvalRepeat() {
-        if((selInc == Info.inc && selAtt == Info.H && currVal > Info.maxH * 10) || 
-            (selInc == Info.dec && selAtt == Info.H && currVal < Info.minH * 10) ||
-            (selInc == Info.inc && selAtt == Info.W && currVal > Info.maxW * 10) ||
-            (selInc == Info.dec && selAtt == Info.W && currVal < Info.maxW * 10)) {
-            CancelInvoke();
-            return;
-        }
-
-        else if (selInc == Info.dec && selAtt == Info.H && currVal < Info.minH * 10) {
-
-        }
-
-        foreach (var obj in list) {
-
-        }
-        currVal += interval;
-    }
-
     void OnClickRunLearn() {
-        if(state == State.Learn) {
+        if (state == State.Learn) {
             state = State.Learning;
             learn.SetActive(false);
 
             currVal = (int)slider.value;
             interval = (int)sliderLearn.value;
+            if (selInc == Info.dec) {
+                interval *= -1;
+            }
+            InvokeRepeating("EvalRepeat", 0f, 0.5f);
+        }
+    }
 
+    void Eval() {
+        //register inputs
+        foreach (var trackedImage in arTrackedImageManager.trackables) {
+            var name = trackedImage.referenceImage.name;
+            if (name[0] == 'm') {
+                var info = dict[name];
+                int i = (selAtt == Info.H) ? info.height : info.weight;
+                Object obj = new Object(trackedImage, i, info.gender);
+                list.Add(obj);
+                Debug.Log("Registered " + name);
+            }
         }
 
-        //InvokeRepeating("EvalRepeat", 0f, 1f);
+        Debug.Log(list.Count + "inputs in evaluation");
+    }
+
+    void EvalRepeat() {
+        if ((selInc == Info.inc && selAtt == Info.H && currVal > Info.maxH * 10) ||
+            (selInc == Info.dec && selAtt == Info.H && currVal < Info.minH * 10) ||
+            (selInc == Info.inc && selAtt == Info.W && currVal > Info.maxW * 10) ||
+            (selInc == Info.dec && selAtt == Info.W && currVal < Info.maxW * 10)) {
+            CancelInvoke();
+            FinishLearning();
+            return;
+        }
+        Debug.Log("repeat : " + currVal);
+        float accuracy = 0f;
+        int correct = 0;
+        int total = list.Count;
+
+        foreach(Transform inst in panelParent.transform) {
+            Destroy(inst.gameObject);
+        }
+        
+        foreach (var obj in list) {
+            int estimate = 0;
+            if((selComp == Info.gt && obj.value * 10 > currVal) || (selComp == Info.lt && obj.value * 10 < currVal)) {
+                estimate = selGen;
+            }
+            else {
+                estimate = (selGen == Info.Boy ? Info.Girl : Info.Boy);
+            }
+
+            var planeGo = obj.obj.transform.GetChild(0).gameObject;
+            var personGo = obj.obj.transform.GetChild(1).gameObject;
+            var name = obj.name;
+            var pos = Camera.main.WorldToScreenPoint(planeGo.transform.position);
+            var panel = Instantiate(panelPrefab, panelParent.transform);
+            panel.transform.position = pos;
+            panel.name = obj.name;
+            if(planeGo.activeSelf) {
+                panel.SetActive(true);
+            }
+            else {
+                panel.SetActive(false);
+            }
+
+            string unit = (selAtt == Info.H) ? "cm" : "kg";
+            string g = (obj.gender == Info.Boy) ? "남자" : "여자";
+            string p = (estimate == Info.Boy) ? "남자" : "여자";
+            panel.GetComponentInChildren<Text>().text = obj.value + unit + " / " + g + "\n" + "예측 : " + p;
+
+            if (obj.gender == estimate) {
+                //correct
+                ++correct;
+                panel.transform.GetChild(1).gameObject.SetActive(false);
+            }
+            else {
+                //incorrect
+                panel.transform.GetChild(0).gameObject.SetActive(false);
+            }
+        }
+        accuracy = (float)correct / total;
+        Debug.Log("Accuracy : " + accuracy * 100f + "%");
+        currVal += interval;
+    }
+
+    void FinishLearning() {
+        state = State.Done;
+
+        foreach(Transform child in panelParent.transform) {
+            Destroy(child.gameObject);
+        }
+
+
+    }
+
+    void PrintAccuracy(float acc) {
+
     }
 }
