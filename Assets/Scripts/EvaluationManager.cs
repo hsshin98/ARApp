@@ -12,7 +12,8 @@ enum State {
     Pivot,
     Learn,
     Learning,
-    Done
+    Done,
+    NewInput
 }
 
 struct Object {
@@ -34,27 +35,36 @@ public class EvaluationManager : MonoBehaviour {
 
     private State state;
     private Button run, runLearn;
-    private GameObject pivot, learn;
+    private GameObject pivot, learn, learning, done;
     private GameObject AttFrame, CompFrame, GenFrame, IncFrame;
     private ARTrackedImageManager arTrackedImageManager;
     private Dictionary<string, Info> dict;
-    private Dictionary<string, Info> localDict;
     private Slider slider, sliderLearn;
     private int selAtt, selComp, selGen, selInc;
     private List<Object> list;
     private int currVal, interval;
-
     private GameObject panelParent;
+    private List<int> optimalVal;
+    private float currAcc, bestAcc;
+    private bool isPerfect;
 
     private void Awake() {
         arTrackedImageManager = FindObjectOfType<ARTrackedImageManager>();
         pivot = transform.GetChild(0).gameObject;
         learn = transform.GetChild(1).gameObject;
+        panelParent = transform.GetChild(2).gameObject;
+        learning = transform.GetChild(3).gameObject;
+        done = transform.GetChild(4).gameObject;
+
+        state = State.Ready;
     }
 
     void Start() {
         dict = FindObjectOfType<ImageRecognition>().dict;
         list = new List<Object>();
+        optimalVal = new List<int>();
+        currAcc = 0f;
+        bestAcc = 0f;
 
         //pivot
         pivot.SetActive(false);
@@ -80,8 +90,6 @@ public class EvaluationManager : MonoBehaviour {
 
         runLearn = learn.transform.GetComponentInChildren<Button>();
         runLearn.onClick.AddListener(OnClickRunLearn);
-
-        panelParent = transform.GetChild(2).gameObject;
     }
     int CheckValid(GameObject frame, int type) {
         Ray ray = Camera.main.ScreenPointToRay(frame.transform.position);
@@ -203,6 +211,27 @@ public class EvaluationManager : MonoBehaviour {
             else {
                 runLearn.gameObject.SetActive(false);
             }
+
+            string unit = (selAtt == Info.H) ? "cm" : "kg";
+            string str;
+            if (selInc == Info.inc) {
+                str = "증가";
+                sliderLearn.interactable = true;
+            }
+            else if (selInc == Info.dec) {
+                str = "감소";
+                sliderLearn.interactable = true;
+            }
+            else {
+                str = "";
+                sliderLearn.value = sliderLearn.minValue;
+                sliderLearn.interactable = false;
+            }
+            float v = slider.value / 10f;
+            float s = sliderLearn.value / 10f;
+
+            string text = v + unit + "부터 " + s + "만큼 " + str + " 하면서 최적값 찾기";
+            learn.transform.GetChild(2).GetComponent<Text>().text = text;
         }
         else if(state == State.Learning) {
             foreach(Transform child in panelParent.transform) {
@@ -215,12 +244,70 @@ public class EvaluationManager : MonoBehaviour {
                     }
                 }
             }
+
+            string unit = (selAtt == Info.H) ? "cm" : "kg";
+            float v = currVal / 10f;
+            float a = (int)(currAcc * 1000f) / 10f;
+            learning.GetComponentInChildren<Text>().text = "현재값 : " + v + unit + "\n정확도 : " + a + "%";
         }
         else if(state == State.Done) {
 
         }
+        else if(state == State.NewInput) {
+            foreach (Transform child in panelParent.transform) {
+                foreach (var img in arTrackedImageManager.trackables) {
+                    var name = img.referenceImage.name;
+                    if (child.name == name) {
+                        var plane = img.gameObject.transform.GetChild(0);
+                        child.position = Camera.main.WorldToScreenPoint(plane.position);
+                        child.gameObject.SetActive(plane.gameObject.activeSelf);
+                        break;
+                    }
+                }
+            }
+        }
     }
+    public void InitPrefab(ARTrackedImage trackedImage) {
+        if (state != State.NewInput)
+            return;
+        InstantiatePanel(trackedImage);
+    }
+    void InstantiatePanel(ARTrackedImage trackedImage) {
+        var name = trackedImage.referenceImage.name;
+        if (name[0] != 'm')
+            return;
+        
+        GameObject obj = Instantiate(panelPrefab, panelParent.transform);
+        var planeGo = trackedImage.gameObject.transform.GetChild(0);
+        var info = dict[name];
+        
+        int value = (selAtt == Info.H) ? info.height : info.weight;
+        int opt = optimalVal[optimalVal.Count / 2];
+        int estimate;
 
+        var pos = Camera.main.WorldToScreenPoint(planeGo.position);
+        obj.transform.position = pos;
+        obj.name = name;
+
+        if ((selComp == Info.gt && value * 10 > opt) || (selComp == Info.lt && value * 10 < opt)) {
+            estimate = selGen;
+        }
+        else {
+            estimate = (selGen == Info.Boy ? Info.Girl : Info.Boy);
+        }
+
+        if (estimate == info.gender) {
+            obj.transform.GetChild(1).gameObject.SetActive(false);
+        }
+        else {
+            obj.transform.GetChild(0).gameObject.SetActive(false);
+        }
+
+        string unit = (selAtt == Info.H) ? "cm" : "kg";
+        string g = (info.gender == Info.Boy) ? "남자" : "여자";
+        string p = (estimate == Info.Boy) ? "남자" : "여자";
+        obj.GetComponentInChildren<Text>().text = value + unit + " / " + g + "\n" + "예측 : " + p;
+    }
     void OnValueChanged(float value) {
         string unit = "";
         if (selAtt == Info.H)
@@ -228,22 +315,11 @@ public class EvaluationManager : MonoBehaviour {
         else if (selAtt == Info.W)
             unit = "kg";
 
-        slider.gameObject.GetComponentInChildren<Text>().text = "" + (slider.value / 10) + unit;
+        slider.GetComponentInChildren<Text>().text = "" + (slider.value / 10) + unit;
     }
 
     void OnValueChangedLearn(float value) {
-        string unit = (selAtt == Info.H) ? "cm" : "kg";
-        string str = "";
-        if (selInc == Info.inc)
-            str = "증가";
-        else if(selInc == Info.dec)
-            str = "감소";
-        float v = value / 10f;
-        float s = sliderLearn.value / 10f;
-
-        string text = v + unit + "부터" + s + "씩 " + str + " 하면서 최적값 찾기";
-
-        learn.transform.GetChild(2).GetComponent<Text>().text = text;
+        
     }
 
     void OnClickLearn() {
@@ -251,6 +327,8 @@ public class EvaluationManager : MonoBehaviour {
         if (state == State.Ready) {
             state = State.Pivot;
             pivot.SetActive(true);
+            slider.value = slider.minValue;
+            slider.GetComponentInChildren<Text>().text = "";
         }
         else if(state == State.Pivot) {
             state = State.Ready;
@@ -262,6 +340,18 @@ public class EvaluationManager : MonoBehaviour {
             state = State.Ready;
             learn.SetActive(false);
         }
+        else if(state == State.Done) {
+            done.SetActive(false);
+            if (isPerfect) {
+                state = State.NewInput;
+                foreach (var trackedImage in arTrackedImageManager.trackables) {
+                    InstantiatePanel(trackedImage);
+                }
+            }
+            else {
+                state = State.Ready;
+            }
+        }
     }
 
     void OnClickRun() {
@@ -269,6 +359,7 @@ public class EvaluationManager : MonoBehaviour {
             OnClickLearn();
             state = State.Learn;
             learn.SetActive(true);
+            sliderLearn.value = sliderLearn.minValue;
             Eval();
         }
     }
@@ -276,7 +367,7 @@ public class EvaluationManager : MonoBehaviour {
         if (state == State.Learn) {
             state = State.Learning;
             learn.SetActive(false);
-
+            learning.SetActive(true);
             currVal = (int)slider.value;
             interval = (int)sliderLearn.value;
             if (selInc == Info.dec) {
@@ -312,7 +403,6 @@ public class EvaluationManager : MonoBehaviour {
             return;
         }
         Debug.Log("repeat : " + currVal);
-        float accuracy = 0f;
         int correct = 0;
         int total = list.Count;
 
@@ -358,22 +448,41 @@ public class EvaluationManager : MonoBehaviour {
                 panel.transform.GetChild(0).gameObject.SetActive(false);
             }
         }
-        accuracy = (float)correct / total;
-        Debug.Log("Accuracy : " + accuracy * 100f + "%");
+
+        currAcc = (float)correct / total;
+
+        if(currAcc == bestAcc) {
+            optimalVal.Add(currVal);
+        }
+        else if(currAcc >= bestAcc) {
+            optimalVal = new List<int>();
+            optimalVal.Add(currVal);
+            bestAcc = currAcc;
+        }
+
         currVal += interval;
     }
 
     void FinishLearning() {
-        state = State.Done;
-
         foreach(Transform child in panelParent.transform) {
             Destroy(child.gameObject);
         }
+        learning.SetActive(false);
 
+        state = State.Done;
 
-    }
+        done.SetActive(true);
+        float solution = optimalVal[optimalVal.Count / 2] / 10f;
+        float ba = (int)(bestAcc * 1000f) / 10f;
+        string str = "최적값(중간값) : " + solution + "\n최고정확도 : " + ba;
 
-    void PrintAccuracy(float acc) {
-
+        if(bestAcc == 1f) {
+            str += "\n새로운 입력들도 시도해보세요!";
+            isPerfect = true;
+        }
+        else {
+            str += "\n다시해보세요...";
+        }
+        done.GetComponentInChildren<Text>().text = str;
     }
 }

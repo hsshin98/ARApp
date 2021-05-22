@@ -30,6 +30,7 @@ public class ImageRecognition : MonoBehaviour {
     public GameObject result;
 
     private PlacementManager pm;
+    private EvaluationManager em;
 
     private string att;
     private int value;
@@ -38,7 +39,8 @@ public class ImageRecognition : MonoBehaviour {
     private bool isRunning;
     private void Awake() {
         arTrackedImageManager = GetComponent<ARTrackedImageManager>();
-        pm = FindObjectOfType<PlacementManager>();
+        //pm = FindObjectOfType<PlacementManager>();
+        em = FindObjectOfType<EvaluationManager>();
         dict = new Dictionary<string, Info>();
         ParseInfo();
     }
@@ -63,6 +65,7 @@ public class ImageRecognition : MonoBehaviour {
     void OnImageChanged(ARTrackedImagesChangedEventArgs args) {
         foreach (var trackedImage in args.added) {
             InitTrackable(trackedImage);
+            em.InitPrefab(trackedImage);
         }
 
         foreach (var trackedImage in args.updated) {
@@ -127,7 +130,7 @@ public class ImageRecognition : MonoBehaviour {
         personGo.transform.localScale = scale;
 
         // Instantiate Object Button
-        pm.InstantiateButton(trackedImage);
+        //pm.InstantiateButton(trackedImage);
     }
     void UpdateTrackable(ARTrackedImage trackedImage) {        
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
