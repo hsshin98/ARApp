@@ -8,16 +8,16 @@ using UnityEngine.XR.ARSubsystems;
 using System;
 
 public struct Info {
-    public const bool Boy = true;
-    public const bool Girl = false;
-    public const int minH = 90;
-    public const int maxH = 180;
-    public const int minW = 20;
-    public const int maxW = 100;
+    public const int Boy = 1, Girl = 2;
+    public const int minH = 90, maxH = 190;
+    public const int minW = 20, maxW = 100;
+    public const int gt = 1, lt = 2;
+    public const int H = 1, W = 2;
+
 
     public int height;
     public int weight;
-    public bool gender; // true for boy, false for girl
+    public int gender;
 };
 
 public class ImageRecognition : MonoBehaviour {
@@ -32,22 +32,21 @@ public class ImageRecognition : MonoBehaviour {
     public Dictionary<string, Info> dict;
     public GameObject result;
     public bool isDone;
-    private int minH, maxH, minW, maxW;
     private int value, done; // start and end values for slider
     private bool isRunning;
     private string att;
-    private bool gender;
+    private int gender;
     private float acc;
     private List<int> list;
     private PlacementManager pm;
     private void Awake() {
         pm = FindObjectOfType<PlacementManager>();
+        dict = new Dictionary<string, Info>();
+        ParseInfo();
     }
 
     void Start() {
         arTrackedImageManager.referenceLibrary = myImageLibrary;
-        dict = new Dictionary<string, Info>();
-        ParseInfo();
         isRunning = false;
         result.SetActive(false);
     }
@@ -99,6 +98,11 @@ public class ImageRecognition : MonoBehaviour {
                 case "qrgt":
                     planeGo.GetComponent<MeshRenderer>().material = gt;
                     break;
+                case "qrboy":
+                    break;
+                case "qrgirl":
+                    break;
+
                 case "qrinc":
                     break;
                 case "qrdec":
@@ -111,7 +115,7 @@ public class ImageRecognition : MonoBehaviour {
         Debug.Log("Init trackable: " + name);
         personGo.name = name;
         personGo.transform.GetChild(0).gameObject.name = name;
-        personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? blue : pink;
+        personGo.GetComponentInChildren<MeshRenderer>().material = (info.gender == Info.Boy) ? blue : pink;
 
         planeGo.GetComponent<MeshRenderer>().material.color = Color.white;
 
@@ -164,7 +168,8 @@ public class ImageRecognition : MonoBehaviour {
     //----------------------------------//
     //      learning algorithm          //
     //----------------------------------//
-    public void Run(string attribute, bool g) {
+    /*
+    public void Run(string attribute, int g) {
         var slider = result.GetComponentInChildren<Slider>();
         result.SetActive(true);
         isRunning = true;
@@ -188,7 +193,7 @@ public class ImageRecognition : MonoBehaviour {
     void Evaluate() {
         float res, correct = 0.0f;
         string str = att + "eight greater than " + value + " is ";
-        str += gender ? "Boy" : "Girl";
+        str += (gender == Info.Boy) ? "Boy" : "Girl";
         result.GetComponentInChildren<Slider>().value = value;
         foreach (var p in dict) {
             var i = p.Value;
@@ -249,19 +254,16 @@ public class ImageRecognition : MonoBehaviour {
 
         isDone = true;
     }
-
+    */
 
     //Parsing Data
     void ParseInfo() {
         int index = 1;
         var splitFile = new string[] { "\r\n", "\r", "\n" };
         string[] d = textfile.text.Split(splitFile, StringSplitOptions.None);
-        string[] inp = { "" };
         foreach (string s in d) {
             Info input;
-            inp = s.Split(' ');
-            if (int.Parse(inp[0]) == -1)
-                break;
+            string[] inp = s.Split(' ');
             string name = "m" + index;
             input.height = int.Parse(inp[1]);
             input.weight = int.Parse(inp[2]);
@@ -271,16 +273,11 @@ public class ImageRecognition : MonoBehaviour {
             Debug.Log("Parsed " + name);
         }
 
-        //parse bounds
-        minH = int.Parse(inp[1]);
-        maxH = int.Parse(inp[2]);
-        minW = int.Parse(inp[3]);
-        maxW = int.Parse(inp[4]);
 
         //give info to highlighter
         var gh = FindObjectOfType<GroupHighlight>();
         gh.dict = dict;
-        gh.SetBounds(minH, maxH, minW, maxW);
+        //gh.SetBounds();
         //give info to touchmanager
         var tm = FindObjectOfType<TouchManager>();
         tm.dict = dict;

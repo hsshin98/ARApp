@@ -32,57 +32,68 @@ public class EvaluationManager : MonoBehaviour {
         CompFrame = pivot.transform.GetChild(1).gameObject;
         GenFrame = pivot.transform.GetChild(2).gameObject;
     }
+    int CheckValid(GameObject frame, int type) {
+        Ray ray = Camera.main.ScreenPointToRay(frame.transform.position);
+        RaycastHit hit;
+        var valid = frame.transform.GetChild(1).gameObject;
+        string placeholder, type1, type2;
 
+        switch(type) {
+            case 1: //attribute
+                type1 = "qrh";
+                type2 = "qrw";
+                placeholder = "키 / 몸무게";
+                break;
+
+            case 2: // comp
+                type1 = "qrgt";
+                type2 = "qrlt";
+                placeholder = "크다 / 작다";
+                break;
+
+            case 3: // gender
+                type1 = "qrboy";
+                type2 = "qrgirl";
+                placeholder = "남자 / 여자";
+                break;
+
+            default:
+                type1 = "";
+                type2 = "";
+                placeholder = "";
+                break;
+        }
+
+        if(Physics.Raycast(ray, out hit, Mathf.Infinity)) {
+            var other = hit.collider.gameObject;
+            if(other.name == type1) {
+                valid.SetActive(true);
+                frame.GetComponentInChildren<Text>().text = "";
+                return 1;
+            }
+            else if(other.name == type2) {
+                valid.SetActive(true);
+                frame.GetComponentInChildren<Text>().text = "";
+                return 2;
+            }
+            else {
+                valid.SetActive(false);
+                frame.GetComponentInChildren<Text>().text = placeholder;
+                return -1;
+            }
+        }
+        else {
+            valid.SetActive(false);
+            frame.GetComponentInChildren<Text>().text = placeholder;
+            return -1;
+        }
+    }
     void Update() {
         if (isActive) {
-            Ray rayatt = Camera.main.ScreenPointToRay(AttFrame.transform.position);
-            RaycastHit hitatt;
-            string atttext = "";
-            if(Physics.Raycast(rayatt, out hitatt, Mathf.Infinity)) {
-                var other = hitatt.collider.gameObject;
-                if (other.name == "qrh") {
-                    selAtt = 1;
-                }
-                else if (other.name == "qrw") {
-                    selAtt = 2;
-                }
-                else {
-                    //invalid hit
-                    selAtt = -1;
-                    atttext += "키 / 몸무게";
-                }
-            }
-            else {
-                selAtt = -1;
-                atttext += "키 / 몸무게";
-            }
-            AttFrame.GetComponentInChildren<Text>().text = atttext;
-
-            Ray raycomp = Camera.main.ScreenPointToRay(CompFrame.transform.position);
-            RaycastHit hitcomp;
-            string comptext = "";
-            if (Physics.Raycast(raycomp, out hitcomp, Mathf.Infinity)) {
-                var other = hitcomp.collider.gameObject;
-                if (other.name == "qrgt") {
-                    selComp = 1;
-                }
-                else if (other.name == "qrlt") {
-                    selComp = 2;
-                }
-                else {
-                    //invalid hit
-                    selAtt = -1;
-                    comptext += "크다 / 작다";
-                }
-            }
-            else {
-                selAtt = -1;
-                comptext += "크다 / 작다";
-            }
-            CompFrame.GetComponentInChildren<Text>().text = comptext;
-
-        }
-            
+            CheckValid(AttFrame, 1);
+            CheckValid(CompFrame, 2);
+            CheckValid(GenFrame, 3);
+        }       
     }
 
     void RunEval() {

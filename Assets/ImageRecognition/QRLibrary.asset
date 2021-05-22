@@ -175,3 +175,23 @@ MonoBehaviour:
     m_SpecifySize: 1
     m_Name: qrdec
     m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4881658751989792921
+      m_GuidHigh: 17301687256433021573
+    m_SerializedTextureGuid:
+      m_GuidLow: 13340981613667397089
+      m_GuidHigh: 1228302026894061194
+    m_Size: {x: 0.05, y: 0.05}
+    m_SpecifySize: 1
+    m_Name: qrboy
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5214149481305423815
+      m_GuidHigh: 882631100679585715
+    m_SerializedTextureGuid:
+      m_GuidLow: 10643321257483880168
+      m_GuidHigh: 1732990029379770568
+    m_Size: {x: 0.05, y: 0.05}
+    m_SpecifySize: 1
+    m_Name: qrgirl
+    m_Texture: {fileID: 0}

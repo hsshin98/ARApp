@@ -27,7 +27,6 @@ public class GroupHighlight : MonoBehaviour {
         isHighlighted = false;
 
         button.onClick.AddListener(OnClick);
-        person.SetActive(false);
 
         selAttribute = -1;
         selComp = -1;
@@ -72,14 +71,15 @@ public class GroupHighlight : MonoBehaviour {
             }
         }
 
-        Debug.Log("count:" + arTrackedImageManager.trackables.count);
+        gameObject.SetActive(false);
+        person.SetActive(false);
     }
 
     void Update() {
         
     }
 
-    public void SetBounds(int minh, int maxh, int minw, int maxw) {
+    public void SetBounds() {
         /*
         minH = minh;
         maxH = maxh;
@@ -207,15 +207,15 @@ public class GroupHighlight : MonoBehaviour {
             var personGo = trackedImage.transform.GetChild(1).gameObject;
             var name = personGo.transform.GetChild(0).name;
             var info = dict[name];
-            Material mat = info.gender ? boyTransparent : girlTransparent;
+            Material mat = (info.gender == Info.Boy) ? boyTransparent : girlTransparent;
             if (selGender == 0 || (selGender == 1 && info.gender == Info.Boy) || (selGender == 2 && info.gender == Info.Girl)) {
-                if (selAttribute == 1) {     // height
-                    if ((selComp == 1 && info.height * 10 < value) || (selComp == 2 && info.height * 10 > value)) {
+                if (selAttribute == Info.H) {
+                    if ((selComp == Info.gt && info.height * 10 < value) || (selComp == Info.lt && info.height * 10 > value)) {
                         personGo.GetComponentInChildren<MeshRenderer>().material = mat;
                     }
                 }
-                else if (selAttribute == 2) {// weight
-                    if ((selComp == 1 && info.weight * 10 < value) || (selComp == 2 && info.weight * 10 > value)) {
+                else if (selAttribute == Info.W) {
+                    if ((selComp == Info.gt && info.weight * 10 < value) || (selComp == Info.lt && info.weight * 10 > value)) {
                         personGo.GetComponentInChildren<MeshRenderer>().material = mat;
                     }
                 }
@@ -235,7 +235,7 @@ public class GroupHighlight : MonoBehaviour {
             var name = personGo.transform.GetChild(0).name;
             var info = dict[name];
 
-            personGo.GetComponentInChildren<MeshRenderer>().material = info.gender ? boy : girl;
+            personGo.GetComponentInChildren<MeshRenderer>().material = (info.gender == Info.Boy) ? boy : girl;
         }
     }
 }
