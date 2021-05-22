@@ -11,6 +11,8 @@ public class TouchManager : MonoBehaviour {
     private bool isCleared;
     void Start() {
         isCleared = true;
+
+        dict = FindObjectOfType<ImageRecognition>().dict;
     }
 
     void Update() {
@@ -48,8 +50,7 @@ public class TouchManager : MonoBehaviour {
         isCleared = false;
         Debug.Log("Display info of " + name);
         GameObject obj = Instantiate(textPrefab, parent.transform, false);
-        //GameObject obj = Instantiate(textPrefab, pos, Quaternion.identity);
-        
+
         //should implement threshold for pos - avoid printing out of screend
 
         obj.transform.position = pos;

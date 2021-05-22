@@ -71,6 +71,8 @@ public class GroupHighlight : MonoBehaviour {
             }
         }
 
+        dict = FindObjectOfType<ImageRecognition>().dict;
+
         gameObject.SetActive(false);
         person.SetActive(false);
     }
@@ -79,16 +81,6 @@ public class GroupHighlight : MonoBehaviour {
         
     }
 
-    public void SetBounds() {
-        /*
-        minH = minh;
-        maxH = maxh;
-        minW = minw;
-        maxW = maxw;
-        */
-        gameObject.SetActive(false);
-        Debug.Log("bounds set: " + minH + "~" + maxH);
-    }
 
     void OnClickAtt() {
         var obj = EventSystem.current.currentSelectedGameObject;
@@ -114,12 +106,12 @@ public class GroupHighlight : MonoBehaviour {
 
     void OnClickComp() {
         var obj = EventSystem.current.currentSelectedGameObject;
-        if (selComp != 1) {
+        if (selComp != Info.gt) {
             //1 = greater than equal
             obj.GetComponentInChildren<Text>().text = "이상";
             selComp = 1;
         }
-        else if (selComp != 2) {
+        else if (selComp != Info.lt) {
             //2 = less than equal
             obj.GetComponentInChildren<Text>().text = "이하";
             selComp = 2;
@@ -131,16 +123,16 @@ public class GroupHighlight : MonoBehaviour {
         if (selGender == 0) {
             //0 : both -> 1 : boy
             obj.GetComponentInChildren<Text>().text = "남자";
-            selGender  = 1;
+            selGender  = Info.Boy;
             person.GetComponentInChildren<MeshRenderer>().material = boy;
         }
-        else if (selGender == 1) {
+        else if (selGender == Info.Boy) {
             //1 : boy -> 2 : girl
             obj.GetComponentInChildren<Text>().text = "여자";
-            selGender = 2;
+            selGender = Info.Girl;
             person.GetComponentInChildren<MeshRenderer>().material = girl;
         }
-        else if(selGender == 2) {
+        else if(selGender == Info.Girl) {
             //2 : girl -> 0 : both
             obj.GetComponentInChildren<Text>().text = "남자/여자";
             selGender = 0;
@@ -208,7 +200,7 @@ public class GroupHighlight : MonoBehaviour {
             var name = personGo.transform.GetChild(0).name;
             var info = dict[name];
             Material mat = (info.gender == Info.Boy) ? boyTransparent : girlTransparent;
-            if (selGender == 0 || (selGender == 1 && info.gender == Info.Boy) || (selGender == 2 && info.gender == Info.Girl)) {
+            if (selGender == 0 || (selGender == Info.Boy && info.gender == Info.Boy) || (selGender == Info.Girl && info.gender == Info.Girl)) {
                 if (selAttribute == Info.H) {
                     if ((selComp == Info.gt && info.height * 10 < value) || (selComp == Info.lt && info.height * 10 > value)) {
                         personGo.GetComponentInChildren<MeshRenderer>().material = mat;
@@ -220,7 +212,7 @@ public class GroupHighlight : MonoBehaviour {
                     }
                 }
             }
-            else if((selGender == 2 && info.gender == Info.Boy) || (selGender == 1 && info.gender == Info.Girl)) {
+            else if((selGender == Info.Girl && info.gender == Info.Boy) || (selGender == Info.Boy && info.gender == Info.Girl)) {
                 personGo.GetComponentInChildren<MeshRenderer>().material = mat;
             }
             

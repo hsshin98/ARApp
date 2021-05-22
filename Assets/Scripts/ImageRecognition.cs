@@ -13,6 +13,7 @@ public struct Info {
     public const int minW = 20, maxW = 100;
     public const int gt = 1, lt = 2;
     public const int H = 1, W = 2;
+    public const int inc = 1, dec = 2;
 
 
     public int height;
@@ -21,14 +22,11 @@ public struct Info {
 };
 
 public class ImageRecognition : MonoBehaviour {
-    [SerializeField]
     ARTrackedImageManager arTrackedImageManager;
-    [SerializeField]
-    XRReferenceImageLibrary myImageLibrary;
     public TextAsset textfile;
     public Material blue, pink;
     public Material correct, incorrect;
-    public Material height, weight, lt, gt;
+    public Material height, weight, lt, gt, boy, girl;
     public Dictionary<string, Info> dict;
     public GameObject result;
     public bool isDone;
@@ -40,13 +38,14 @@ public class ImageRecognition : MonoBehaviour {
     private List<int> list;
     private PlacementManager pm;
     private void Awake() {
+        arTrackedImageManager = GetComponent<ARTrackedImageManager>();
         pm = FindObjectOfType<PlacementManager>();
         dict = new Dictionary<string, Info>();
         ParseInfo();
     }
 
     void Start() {
-        arTrackedImageManager.referenceLibrary = myImageLibrary;
+        //arTrackedImageManager.referenceLibrary = myImageLibrary;
         isRunning = false;
         result.SetActive(false);
     }
@@ -99,8 +98,10 @@ public class ImageRecognition : MonoBehaviour {
                     planeGo.GetComponent<MeshRenderer>().material = gt;
                     break;
                 case "qrboy":
+                    planeGo.GetComponent<MeshRenderer>().material = boy;
                     break;
                 case "qrgirl":
+                    planeGo.GetComponent<MeshRenderer>().material = girl;
                     break;
 
                 case "qrinc":
@@ -163,6 +164,24 @@ public class ImageRecognition : MonoBehaviour {
     }
     void RemoveTrackable(ARTrackedImage trackedImage) {
         //should able manual placement via plane detection
+    }
+
+    //Parsing Data
+    void ParseInfo() {
+        int index = 1;
+        var splitFile = new string[] { "\r\n", "\r", "\n" };
+        string[] d = textfile.text.Split(splitFile, StringSplitOptions.None);
+        foreach (string s in d) {
+            Info input;
+            string[] inp = s.Split(' ');
+            string name = "m" + index;
+            input.height = int.Parse(inp[1]);
+            input.weight = int.Parse(inp[2]);
+            input.gender = (inp[3] == "남자") ? Info.Boy : Info.Girl;
+            dict.Add(name, input);
+            ++index;
+            Debug.Log("Parsed " + name);
+        }
     }
 
     //----------------------------------//
@@ -255,31 +274,4 @@ public class ImageRecognition : MonoBehaviour {
         isDone = true;
     }
     */
-
-    //Parsing Data
-    void ParseInfo() {
-        int index = 1;
-        var splitFile = new string[] { "\r\n", "\r", "\n" };
-        string[] d = textfile.text.Split(splitFile, StringSplitOptions.None);
-        foreach (string s in d) {
-            Info input;
-            string[] inp = s.Split(' ');
-            string name = "m" + index;
-            input.height = int.Parse(inp[1]);
-            input.weight = int.Parse(inp[2]);
-            input.gender = (inp[3] == "남자") ? Info.Boy : Info.Girl;
-            dict.Add(name, input);
-            ++index;
-            Debug.Log("Parsed " + name);
-        }
-
-
-        //give info to highlighter
-        var gh = FindObjectOfType<GroupHighlight>();
-        gh.dict = dict;
-        //gh.SetBounds();
-        //give info to touchmanager
-        var tm = FindObjectOfType<TouchManager>();
-        tm.dict = dict;
-    }
 }
