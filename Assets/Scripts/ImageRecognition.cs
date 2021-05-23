@@ -27,28 +27,18 @@ public class ImageRecognition : MonoBehaviour {
     public Material correct, incorrect;
     public Material height, weight, lt, gt, boy, girl, inc, dec;
     public Dictionary<string, Info> dict;
-    public GameObject result;
 
     private PlacementManager pm;
     private EvaluationManager em;
-
-    private string att;
-    private int value;
-    private int gender;
-    public bool isDone;
-    private bool isRunning;
-    private void Awake() {
+    void Awake() {
         arTrackedImageManager = GetComponent<ARTrackedImageManager>();
-        //pm = FindObjectOfType<PlacementManager>();
+        pm = FindObjectOfType<PlacementManager>();
         em = FindObjectOfType<EvaluationManager>();
         dict = new Dictionary<string, Info>();
         ParseInfo();
     }
 
-    void Start() {
-        //arTrackedImageManager.referenceLibrary = myImageLibrary;
-        isRunning = false;
-        result.SetActive(false);
+    void Start() { 
     }
 
     void Update() {
@@ -130,37 +120,20 @@ public class ImageRecognition : MonoBehaviour {
         personGo.transform.localScale = scale;
 
         // Instantiate Object Button
-        //pm.InstantiateButton(trackedImage);
+        pm.InstantiateButton(trackedImage);
     }
     void UpdateTrackable(ARTrackedImage trackedImage) {        
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
         var personGo = trackedImage.transform.GetChild(1).gameObject;
         var name = trackedImage.referenceImage.name;
 
-        if(name[0] == 'q') {
-            if(trackedImage.trackingState == TrackingState.Tracking) {
-                planeGo.SetActive(true);
-            }
-            else {
-                planeGo.SetActive(false);
-            }
-            return;
-        }
-
-        var info = dict[name];
-
         // Disable the visual plane if it is not being tracked
-        if (trackedImage.trackingState == TrackingState.Tracking) { 
-            personGo.SetActive(true);
-            planeGo.SetActive(true);
-
-            if (isRunning) {
-                int val = (att == "H") ? info.height : info.weight;
-                if(val >= value && info.gender == gender)
-                    planeGo.GetComponent<MeshRenderer>().material = correct;
-                else 
-                    planeGo.GetComponent<MeshRenderer>().material = incorrect;
+        if (trackedImage.trackingState == TrackingState.Tracking) {
+            if (name[0] == 'm') {
+                personGo.SetActive(true);
+                pm.DestroyInstance(trackedImage);
             }
+            planeGo.SetActive(true);
         }
         else {
             planeGo.SetActive(false);

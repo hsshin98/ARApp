@@ -7,15 +7,6 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 
-enum State {
-    Ready,
-    Pivot,
-    Learn,
-    Learning,
-    Done,
-    NewInput
-}
-
 struct Object {
     public string name;
     public GameObject obj;
@@ -30,6 +21,15 @@ struct Object {
 }
 
 public class EvaluationManager : MonoBehaviour {
+    private enum State {
+        Ready,
+        Pivot,
+        Learn,
+        Learning,
+        Done,
+        NewInput
+    }
+
     public Button learnButton;
     public GameObject panelPrefab;
 
