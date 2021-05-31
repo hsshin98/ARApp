@@ -82,6 +82,9 @@ public class PlacementManager : MonoBehaviour {
     }
     void OnClickMaster() {
         if(state == State.Ready) {
+            transform.parent.GetChild(2).gameObject.SetActive(false);
+            transform.parent.GetChild(3).gameObject.SetActive(false);
+
             state = State.SelectingObject;
             buttonParent.SetActive(true);
         }

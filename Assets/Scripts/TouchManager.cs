@@ -51,15 +51,17 @@ public class TouchManager : MonoBehaviour {
         Debug.Log("Display info of " + name);
         GameObject obj = Instantiate(textPrefab, parent.transform, false);
 
-        //should implement threshold for pos - avoid printing out of screend
-
         obj.transform.position = pos;
         obj.name = name;
 
         var h = obj.transform.GetChild(1);
         var w = obj.transform.GetChild(3);
-        
+        var head = obj.transform.GetChild(5);
+        var waist = obj.transform.GetChild(7);
+
         h.GetComponentInChildren<Text>().text = info.height + "cm";
         w.GetComponentInChildren<Text>().text = info.weight + "kg";
+        head.GetComponentInChildren<Text>().text = info.head + "cm";
+        waist.GetComponentInChildren<Text>().text = info.waist + "cm";
     }
 }

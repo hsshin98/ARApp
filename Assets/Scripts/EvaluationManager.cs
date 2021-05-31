@@ -36,6 +36,7 @@ public class EvaluationManager : MonoBehaviour {
     private State state;
     private Button run, runLearn;
     private GameObject pivot, learn, learning, done;
+    private Text valText;
     private GameObject AttFrame, CompFrame, GenFrame, IncFrame;
     private ARTrackedImageManager arTrackedImageManager;
     private Dictionary<string, Info> dict;
@@ -47,6 +48,9 @@ public class EvaluationManager : MonoBehaviour {
     private List<int> optimalVal;
     private float currAcc, bestAcc;
     private bool isPerfect;
+    private int minBound, maxBound;
+    private float repeatSpeed = 1.0f;
+    private GameObject content;
 
     private void Awake() {
         arTrackedImageManager = FindObjectOfType<ARTrackedImageManager>();
@@ -80,6 +84,7 @@ public class EvaluationManager : MonoBehaviour {
         
         run = pivot.transform.GetChild(4).GetComponent<Button>();
         run.onClick.AddListener(OnClickRun);
+        valText = pivot.transform.GetChild(6).GetComponent<Text>();
 
         //learn
         learn.SetActive(false);
@@ -90,18 +95,24 @@ public class EvaluationManager : MonoBehaviour {
 
         runLearn = learn.transform.GetComponentInChildren<Button>();
         runLearn.onClick.AddListener(OnClickRunLearn);
+
+        //learning
+        content = learning.transform.GetChild(1).GetChild(0).GetChild(0).gameObject;
     }
     int CheckValid(GameObject frame, int type) {
         Ray ray = Camera.main.ScreenPointToRay(frame.transform.position);
         RaycastHit hit;
         var valid = frame.transform.GetChild(1).gameObject;
         string placeholder, type1, type2;
+        string type3 = "", type4 = "";
 
         switch(type) {
             case 1: //attribute
                 type1 = "qrh";
                 type2 = "qrw";
-                placeholder = "키 / 몸무게";
+                type3 = "qrhead";
+                type4 = "qrwaist";
+                placeholder = "속성";
                 break;
 
             case 2: // comp
@@ -131,15 +142,23 @@ public class EvaluationManager : MonoBehaviour {
 
         if(Physics.Raycast(ray, out hit, Mathf.Infinity)) {
             var other = hit.collider.gameObject;
-            if(other.name == type1) {
-                valid.SetActive(true);
-                frame.GetComponentInChildren<Text>().text = "";
+            if (other.name == null || other.name == "")
+                return -1;
+
+            valid.SetActive(true);
+            frame.GetComponentInChildren<Text>().text = "";
+
+            if (other.name == type1) {
                 return 1;
             }
             else if(other.name == type2) {
-                valid.SetActive(true);
-                frame.GetComponentInChildren<Text>().text = "";
                 return 2;
+            }
+            else if(other.name == type3) {
+                return 3;
+            }
+            else if(other.name == type4) {
+                return 4;
             }
             else {
                 valid.SetActive(false);
@@ -159,26 +178,48 @@ public class EvaluationManager : MonoBehaviour {
             selComp = CheckValid(CompFrame, 2);
             selGen = CheckValid(GenFrame, 3);
 
-            if(selAtt == Info.H) {
+            if(selAtt == Info.Height) {
                 if(slider.interactable == false) {
                     slider.interactable = true;
                 }
-                if(slider.minValue != Info.minH * 10) {
-                    slider.minValue = Info.minH * 10;
-                    slider.maxValue = Info.maxH * 10;
+                if(slider.minValue != Info.minHeight * 10) {
+                    slider.minValue = Info.minHeight * 10;
+                    slider.maxValue = Info.maxHeight * 10;
                     slider.value = slider.minValue;
                     slider.gameObject.GetComponentInChildren<Text>().text = "" + (slider.value / 10) + "cm";
                 }
             }
-            else if(selAtt == Info.W) {
+            else if(selAtt == Info.Weight) {
                 if(slider.interactable == false) {
                     slider.interactable = true;
                 }
-                if (slider.minValue != Info.minW * 10) {
-                    slider.minValue = Info.minW * 10;
-                    slider.maxValue = Info.maxW * 10;
+                if (slider.minValue != Info.minWeight * 10) {
+                    slider.minValue = Info.minWeight * 10;
+                    slider.maxValue = Info.maxWeight * 10;
                     slider.value = slider.minValue;
                     slider.gameObject.GetComponentInChildren<Text>().text = "" + (slider.value / 10) + "kg";
+                }
+            }
+            else if(selAtt == Info.Head) {
+                if (slider.interactable == false) {
+                    slider.interactable = true;
+                }
+                if (slider.minValue != Info.minHead * 10) {
+                    slider.minValue = Info.minHead * 10;
+                    slider.maxValue = Info.maxHead * 10;
+                    slider.value = slider.minValue;
+                    slider.gameObject.GetComponentInChildren<Text>().text = "" + (slider.value / 10) + "cm";
+                }
+            }
+            else if(selAtt == Info.Waist) {
+                if (slider.interactable == false) {
+                    slider.interactable = true;
+                }
+                if (slider.minValue != Info.minWaist * 10) {
+                    slider.minValue = Info.minWaist * 10;
+                    slider.maxValue = Info.maxWaist * 10;
+                    slider.value = slider.minValue;
+                    slider.gameObject.GetComponentInChildren<Text>().text = "" + (slider.value / 10) + "cm";
                 }
             }
             else {
@@ -187,6 +228,8 @@ public class EvaluationManager : MonoBehaviour {
                     slider.interactable = false;
                 }
             }
+
+            SetValText();
 
             if(selAtt > 0 && selComp > 0 && selGen > 0) {
                 run.gameObject.SetActive(true);
@@ -212,7 +255,7 @@ public class EvaluationManager : MonoBehaviour {
                 runLearn.gameObject.SetActive(false);
             }
 
-            string unit = (selAtt == Info.H) ? "cm" : "kg";
+            string unit = (selAtt == Info.Weight) ? "kg" : "cm";
             string str;
             if (selInc == Info.inc) {
                 str = "증가";
@@ -230,11 +273,12 @@ public class EvaluationManager : MonoBehaviour {
             float v = slider.value / 10f;
             float s = sliderLearn.value / 10f;
 
-            string text = v + unit + "부터 " + s + "만큼 " + str + " 하면서 최적값 찾기";
+            string text = v + unit + "부터 " + s + "만큼 " + str + " 하면서 최적값 찾아보기";
             learn.transform.GetChild(2).GetComponent<Text>().text = text;
         }
         else if(state == State.Learning) {
-            foreach(Transform child in panelParent.transform) {
+            //update panel position
+            foreach (Transform child in panelParent.transform) {
                 foreach(var o in list) {
                     if(child.name == o.name) {
                         var plane = o.obj.transform.GetChild(0);
@@ -245,7 +289,8 @@ public class EvaluationManager : MonoBehaviour {
                 }
             }
 
-            string unit = (selAtt == Info.H) ? "cm" : "kg";
+            //update text
+            string unit = (selAtt == Info.Weight) ? "kg" : "cm";
             float v = currVal / 10f;
             float a = (int)(currAcc * 1000f) / 10f;
             learning.GetComponentInChildren<Text>().text = "현재값 : " + v + unit + "\n정확도 : " + a + "%";
@@ -254,6 +299,7 @@ public class EvaluationManager : MonoBehaviour {
 
         }
         else if(state == State.NewInput) {
+            //update panel position
             foreach (Transform child in panelParent.transform) {
                 foreach (var img in arTrackedImageManager.trackables) {
                     var name = img.referenceImage.name;
@@ -280,8 +326,21 @@ public class EvaluationManager : MonoBehaviour {
         GameObject obj = Instantiate(panelPrefab, panelParent.transform);
         var planeGo = trackedImage.gameObject.transform.GetChild(0);
         var info = dict[name];
-        
-        int value = (selAtt == Info.H) ? info.height : info.weight;
+
+        int value = 0;
+        if (selAtt == Info.Height) {
+            value = info.height;
+        }
+        else if (selAtt == Info.Weight) {
+            value = info.weight;
+        }
+        else if (selAtt == Info.Head) {
+            value = info.head;
+        }
+        else if (selAtt == Info.Waist) {
+            value = info.waist;
+        }
+        //int value = (selAtt == Info.Height) ? info.height : info.weight;
         int opt = optimalVal[optimalVal.Count / 2];
         int estimate;
 
@@ -303,19 +362,65 @@ public class EvaluationManager : MonoBehaviour {
             obj.transform.GetChild(0).gameObject.SetActive(false);
         }
 
-        string unit = (selAtt == Info.H) ? "cm" : "kg";
+        string unit = (selAtt == Info.Weight) ? "kg" : "cm";
         string g = (info.gender == Info.Boy) ? "남자" : "여자";
         string p = (estimate == Info.Boy) ? "남자" : "여자";
         obj.GetComponentInChildren<Text>().text = value + unit + " / " + g + "\n" + "예측 : " + p;
     }
     void OnValueChanged(float value) {
         string unit = "";
-        if (selAtt == Info.H)
+        if (selAtt == Info.Height || selAtt == Info.Head || selAtt == Info.Waist)
             unit = "cm";
-        else if (selAtt == Info.W)
+        else if (selAtt == Info.Weight)
             unit = "kg";
 
         slider.GetComponentInChildren<Text>().text = "" + (slider.value / 10) + unit;
+    }
+
+    void SetValText() {
+        string att = "(속성)";
+        string v = "()";
+        string com = "(크면/작으면)";
+        string g = "(남자/여자)";
+
+        switch(selAtt) {
+            case Info.Height:
+                att = "키";
+                break;
+            case Info.Weight:
+                att = "몸무게";
+                break;
+            case Info.Head:
+                att = "머리둘레";
+                break;
+            case Info.Waist:
+                att = "허리둘레";
+                break;
+        }
+
+        if(slider.interactable) {
+            v = "" + (slider.value / 10f);
+        }
+
+        switch(selComp) {
+            case Info.gt:
+                com = "크면";
+                break;
+            case Info.lt:
+                com = "작으면";
+                break;
+        }
+
+        switch(selGen) {
+            case Info.Boy:
+                g = "남자";
+                break;
+            case Info.Girl:
+                g = "여자";
+                break;
+        }
+
+        valText.text = att + "가 " + v + "보다 " + com + " " + g + "입니다";
     }
 
     void OnValueChangedLearn(float value) {
@@ -329,11 +434,12 @@ public class EvaluationManager : MonoBehaviour {
             pivot.SetActive(true);
             slider.value = slider.minValue;
             slider.GetComponentInChildren<Text>().text = "";
+            ClearTable();
         }
         else if(state == State.Pivot) {
             state = State.Ready;
             pivot.SetActive(false);
-            AttFrame.GetComponentInChildren<Text>().text = "키 / 몸무게";
+            AttFrame.GetComponentInChildren<Text>().text = "속성";
             CompFrame.GetComponentInChildren<Text>().text = "크다 / 작다";
         }
         else if(state == State.Learn) {
@@ -352,6 +458,9 @@ public class EvaluationManager : MonoBehaviour {
                 state = State.Ready;
             }
         }
+        else if(state == State.NewInput) {
+            learning.SetActive(false);
+        }
     }
 
     void OnClickRun() {
@@ -360,6 +469,8 @@ public class EvaluationManager : MonoBehaviour {
             state = State.Learn;
             learn.SetActive(true);
             sliderLearn.value = sliderLearn.minValue;
+            minBound = (int)(slider.minValue / 10f);
+            maxBound = (int)(slider.maxValue / 10f);
             Eval();
         }
     }
@@ -373,7 +484,23 @@ public class EvaluationManager : MonoBehaviour {
             if (selInc == Info.dec) {
                 interval *= -1;
             }
-            InvokeRepeating("EvalRepeat", 0f, 0.5f);
+            string text = "";
+            switch (selAtt) {
+                case Info.Height:
+                    text = "키";
+                    break;
+                case Info.Weight:
+                    text = "몸무게";
+                    break;
+                case Info.Head:
+                    text = "머리둘레";
+                    break;
+                case Info.Waist:
+                    text = "허리둘레";
+                    break;
+            }
+            learning.transform.GetChild(1).GetChild(3).GetChild(1).GetComponent<Text>().text = text;
+            InvokeRepeating("EvalRepeat", 0f, repeatSpeed);
         }
     }
 
@@ -383,7 +510,21 @@ public class EvaluationManager : MonoBehaviour {
             var name = trackedImage.referenceImage.name;
             if (name[0] == 'm') {
                 var info = dict[name];
-                int i = (selAtt == Info.H) ? info.height : info.weight;
+                int i = 0;
+                switch (selAtt) {
+                    case Info.Height:
+                        i = info.height;
+                        break;
+                    case Info.Weight:
+                        i = info.weight;
+                        break;
+                    case Info.Head:
+                        i = info.head;
+                        break;
+                    case Info.Waist:
+                        i = info.waist;
+                        break;
+                }
                 Object obj = new Object(trackedImage, i, info.gender);
                 list.Add(obj);
                 Debug.Log("Registered " + name);
@@ -394,14 +535,11 @@ public class EvaluationManager : MonoBehaviour {
     }
 
     void EvalRepeat() {
-        if ((selInc == Info.inc && selAtt == Info.H && currVal > Info.maxH * 10) ||
-            (selInc == Info.dec && selAtt == Info.H && currVal < Info.minH * 10) ||
-            (selInc == Info.inc && selAtt == Info.W && currVal > Info.maxW * 10) ||
-            (selInc == Info.dec && selAtt == Info.W && currVal < Info.maxW * 10)) {
-            CancelInvoke();
+        if ((selInc == Info.inc && currVal > maxBound * 10) || (selInc == Info.dec && currVal < minBound * 10)) {
             FinishLearning();
             return;
         }
+
         Debug.Log("repeat : " + currVal);
         int correct = 0;
         int total = list.Count;
@@ -433,7 +571,7 @@ public class EvaluationManager : MonoBehaviour {
                 panel.SetActive(false);
             }
 
-            string unit = (selAtt == Info.H) ? "cm" : "kg";
+            string unit = (selAtt == Info.Weight) ? "kg" : "cm";
             string g = (obj.gender == Info.Boy) ? "남자" : "여자";
             string p = (estimate == Info.Boy) ? "남자" : "여자";
             panel.GetComponentInChildren<Text>().text = obj.value + unit + " / " + g + "\n" + "예측 : " + p;
@@ -460,21 +598,67 @@ public class EvaluationManager : MonoBehaviour {
             bestAcc = currAcc;
         }
 
+        InsertTable();
+        UpdateTable();
+
+        if(currAcc == 1f) {
+            //stop when 100%
+            FinishLearning();
+            return;
+        }
         currVal += interval;
     }
 
+    void InsertTable() {
+        Debug.Log("Insert: ");
+        var row = content.transform.GetChild(0).gameObject;
+        var i = Instantiate(row, content.transform);
+        string unit = (selAtt == Info.Weight) ? "kg" : "cm";
+        Debug.Log(i.transform.position);
+        i.transform.GetChild(1).GetComponent<Text>().text = "" + (currVal / 10f) + unit;
+        i.transform.GetChild(2).GetComponent<Text>().text = "" + ((int)(currAcc * 1000f) / 10f) + "%";
+        i.SetActive(true);
+    }
+
+    void UpdateTable() {
+        var accstr = "" + ((int)(currAcc * 1000f) / 10f) + "%";
+        foreach (Transform child in content.transform) {
+            if (child.gameObject.activeSelf) {
+                Color c;
+                if (child.GetChild(2).GetComponent<Text>().text == accstr) {
+                    c = Color.green;
+                }
+                else {
+                    c = Color.white;
+                }
+                c.a = 0.5f;
+
+                child.GetChild(0).GetComponent<Image>().color = c;
+            }
+        }
+    }
+
+    void ClearTable() {
+        foreach(Transform child in content.transform) {
+            if(child.gameObject.activeSelf) {
+                Destroy(child.gameObject);
+            }
+        }
+    }
     void FinishLearning() {
-        foreach(Transform child in panelParent.transform) {
+        CancelInvoke();
+        foreach (Transform child in panelParent.transform) {
             Destroy(child.gameObject);
         }
-        learning.SetActive(false);
+        //learning.SetActive(false);
+        learning.transform.GetChild(0).gameObject.SetActive(false);
 
         state = State.Done;
 
         done.SetActive(true);
         float solution = optimalVal[optimalVal.Count / 2] / 10f;
         float ba = (int)(bestAcc * 1000f) / 10f;
-        string str = "최적값(중간값) : " + solution + "\n최고정확도 : " + ba;
+        string str = "최적값 : " + solution + "\n최고정확도 : " + ba;
 
         if(bestAcc == 1f) {
             str += "\n새로운 입력들도 시도해보세요!";
@@ -484,5 +668,9 @@ public class EvaluationManager : MonoBehaviour {
             str += "\n다시해보세요...";
         }
         done.GetComponentInChildren<Text>().text = str;
+    }
+
+    public void SetSpeed(float s) {
+        repeatSpeed = s;
     }
 }

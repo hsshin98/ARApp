@@ -7,35 +7,32 @@ using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
 public class GroupHighlight : MonoBehaviour {
-    [SerializeField]
-    ARTrackedImageManager arTrackedImageManager;
-
     public GameObject person;
     public Button button;
     public Material boy, girl, both;
     public Material boyTransparent, girlTransparent;
 
-    private int minH, maxH, minW, maxW;
     private int selAttribute, selComp, selGender;
     private Button att, comp, gender, run;
     private Slider slider;
     private GameObject panel;
     private bool isActive, isHighlighted;
-    public Dictionary<string, Info> dict;
+    private ARTrackedImageManager arTrackedImageManager;
+    private Dictionary<string, Info> dict;
+
+    private void Awake() {
+        arTrackedImageManager = FindObjectOfType<ARTrackedImageManager>();
+    }
+
     void Start() {
         isActive = false;
         isHighlighted = false;
 
         button.onClick.AddListener(OnClick);
 
-        selAttribute = -1;
+        selAttribute = 0;
         selComp = -1;
         selGender = 0;
-
-        minH = 90;
-        maxH = 190;
-        minW = 20;
-        maxW = 100;
 
         //initialize objects
         foreach(Transform child in transform) {
@@ -72,6 +69,7 @@ public class GroupHighlight : MonoBehaviour {
         }
 
         dict = FindObjectOfType<ImageRecognition>().dict;
+        slider.interactable = false;
 
         gameObject.SetActive(false);
         person.SetActive(false);
@@ -84,23 +82,44 @@ public class GroupHighlight : MonoBehaviour {
 
     void OnClickAtt() {
         var obj = EventSystem.current.currentSelectedGameObject;
-        if(selAttribute != 1) {
-            //1 = height
-            obj.GetComponentInChildren<Text>().text = "키";
-            selAttribute = 1;
-
-            slider.maxValue = maxH * 10;
-            slider.minValue = minH * 10;
-            slider.value = slider.minValue;
+        string text;
+        selAttribute = 1 + (selAttribute) % 4;
+        switch(selAttribute) {
+            case Info.Height:
+                slider.maxValue = Info.maxHeight * 10;
+                slider.minValue = Info.minHeight * 10;
+                text = "키";
+                break;
+            case Info.Weight:
+                slider.maxValue = Info.maxWeight * 10;
+                slider.minValue = Info.minWeight * 10;
+                text = "몸무게";
+                break;
+            case Info.Head:
+                slider.maxValue = Info.maxHead * 10;
+                slider.minValue = Info.minHead * 10;
+                text = "머리둘레";
+                break;
+            case Info.Waist:
+                slider.maxValue = Info.maxWaist * 10;
+                slider.minValue = Info.minWaist * 10;
+                text = "허리둘레";
+                break;
+            default:
+                text = "속성";
+                break;
         }
-        else if(selAttribute != 2) {
-            //2 = weight
-            obj.GetComponentInChildren<Text>().text = "몸무게";
-            selAttribute = 2;
 
-            slider.maxValue = maxW * 10;
-            slider.minValue = minW * 10;
+        obj.GetComponentInChildren<Text>().text = text;
+
+        if (selAttribute > 0) {
             slider.value = slider.minValue;
+            slider.interactable = true;
+        }
+        else {
+            slider.value = slider.minValue;
+            panel.GetComponentInChildren<Text>().text = "";
+            slider.interactable = false;
         }
     }
 
@@ -148,8 +167,10 @@ public class GroupHighlight : MonoBehaviour {
         }
 
         isActive = !isActive;
-        if (isActive)
-            person.transform.localScale = new Vector3(minW / 25f, minH / 75f, minW / 25f);
+        if (isActive) {
+            person.transform.localScale = new Vector3(Info.minWeight / 25f, Info.minHeight / 75f, Info.minWeight / 25f);
+            InitButton();
+        }
         person.SetActive(isActive);
         gameObject.SetActive(isActive);
     }
@@ -157,15 +178,28 @@ public class GroupHighlight : MonoBehaviour {
     void OnValueChanged(float value) {
         Vector3 scale = person.transform.localScale;
         string text = "" + value / 10f;
-        if (selAttribute == 1) {
-            text += "cm";
-            scale.y = value / 750f;
+
+        switch (selAttribute) {
+            case Info.Height:
+                text += "cm";
+                scale.y = value / 750f;
+                break;
+            case Info.Weight:
+                scale.x = value / 250f;
+                scale.z = value / 250f;
+                text += "cm";
+                break;
+            case Info.Head:
+                text += "cm";
+                break;
+            case Info.Waist:
+                text += "cm";
+                break;
+            default:
+                text = "";
+                break;
         }
-        else {
-            text += "kg";
-            scale.x = value / 250f;
-            scale.z = value / 250f;
-        }
+
         panel.GetComponentInChildren<Text>().text = text;
         person.transform.localScale = scale;
     }
@@ -179,11 +213,11 @@ public class GroupHighlight : MonoBehaviour {
     }
 
     void InitButton() {
-        att.GetComponentInChildren<Text>().text = "키/\n몸무게";
+        att.GetComponentInChildren<Text>().text = "속성";
         comp.GetComponentInChildren<Text>().text = "이상/\n이하";
         gender.GetComponentInChildren<Text>().text = "남자/여자";
 
-        selAttribute = -1;
+        selAttribute = 0;
         selComp = -1;
         selGender = 0;
         person.GetComponentInChildren<MeshRenderer>().material = both;
@@ -197,19 +231,31 @@ public class GroupHighlight : MonoBehaviour {
         Debug.Log("Att: " + selAttribute + ", Gen: " + selGender + "selComp: " + selComp);
         foreach (var trackedImage in arTrackedImageManager.trackables) {
             var personGo = trackedImage.transform.GetChild(1).gameObject;
-            var name = personGo.transform.GetChild(0).name;
+            var name = trackedImage.referenceImage.name;
+            
+            if (name[0] == 'q')
+                continue;
+
             var info = dict[name];
             Material mat = (info.gender == Info.Boy) ? boyTransparent : girlTransparent;
             if (selGender == 0 || (selGender == Info.Boy && info.gender == Info.Boy) || (selGender == Info.Girl && info.gender == Info.Girl)) {
-                if (selAttribute == Info.H) {
-                    if ((selComp == Info.gt && info.height * 10 < value) || (selComp == Info.lt && info.height * 10 > value)) {
-                        personGo.GetComponentInChildren<MeshRenderer>().material = mat;
-                    }
+                int val = 0;
+                switch(selAttribute) {
+                    case Info.Height:
+                        val = info.height;
+                        break;
+                    case Info.Weight:
+                        val = info.weight;
+                        break;
+                    case Info.Head:
+                        val = info.head;
+                        break;
+                    case Info.Waist:
+                        val = info.waist;
+                        break;
                 }
-                else if (selAttribute == Info.W) {
-                    if ((selComp == Info.gt && info.weight * 10 < value) || (selComp == Info.lt && info.weight * 10 > value)) {
-                        personGo.GetComponentInChildren<MeshRenderer>().material = mat;
-                    }
+                if ((selComp == Info.gt && val * 10 < value) || (selComp == Info.lt && val * 10 > value)) {
+                    personGo.GetComponentInChildren<MeshRenderer>().material = mat;
                 }
             }
             else if((selGender == Info.Girl && info.gender == Info.Boy) || (selGender == Info.Boy && info.gender == Info.Girl)) {
@@ -224,7 +270,9 @@ public class GroupHighlight : MonoBehaviour {
     void DisableHighlight() {
         foreach (var trackedImage in arTrackedImageManager.trackables) {
             var personGo = trackedImage.transform.GetChild(1).gameObject;
-            var name = personGo.transform.GetChild(0).name;
+            var name = trackedImage.referenceImage.name;
+            if (name[0] == 'q')
+                continue;
             var info = dict[name];
 
             personGo.GetComponentInChildren<MeshRenderer>().material = (info.gender == Info.Boy) ? boy : girl;
