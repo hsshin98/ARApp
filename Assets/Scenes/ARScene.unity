@@ -354,7 +354,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &60123355
 RectTransform:
   m_ObjectHideFlags: 0
@@ -465,7 +465,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 60123354}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9a30c393bb091024a8a9f0232e8b980e, type: 3}
   m_Name: 
@@ -1317,7 +1317,7 @@ RectTransform:
   m_GameObject: {fileID: 201902469}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_Children: []
   m_Father: {fileID: 435352433}
   m_RootOrder: 0
@@ -6496,7 +6496,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\uCD5C\uC801\uAC12 : 100cm\n\uCD5C\uACE0\uC815\uD655\uB3C4 : 100%\n\uB2E4\uC2DC\uD574\uBCF4\uC138\uC694..."
+  m_Text: "\uCD5C\uC801\uAC12 : -\n\uCD5C\uACE0\uC815\uD655\uB3C4 : 0%\n\uB2E4\uC2DC\uD574\uBCF4\uC138\uC694..."
 --- !u!222 &1604241428
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7329,7 +7329,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SerializedLibrary: {fileID: 11400000, guid: bc79eb5fc7ba2a54ea941053297fc351,
     type: 2}
-  m_MaxNumberOfMovingImages: 5
+  m_MaxNumberOfMovingImages: 8
   m_TrackedImagePrefab: {fileID: 2952780756901966483, guid: 6eabf4ed92f8eab4fa7988cddd85bdfc,
     type: 3}
 --- !u!114 &1729843562
@@ -7366,7 +7366,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1729843558}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1760703bbd54c04488a8d10600262ab, type: 3}
   m_Name: 
@@ -7381,7 +7381,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1729843558}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fa17d122634046b4a8e23048891fafc5, type: 3}
   m_Name: 

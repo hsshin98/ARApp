@@ -36,13 +36,14 @@ public class ImageRecognition : MonoBehaviour {
     private EvaluationManager em;
     void Awake() {
         arTrackedImageManager = GetComponent<ARTrackedImageManager>();
-        pm = FindObjectOfType<PlacementManager>();
+        //pm = FindObjectOfType<PlacementManager>();
         em = FindObjectOfType<EvaluationManager>();
         dict = new Dictionary<string, Info>();
         ParseInfo();
     }
 
-    void Start() { 
+    void Start() {
+        Debug.Log(dict["m1"].height);
     }
 
     void Update() {
@@ -130,7 +131,7 @@ public class ImageRecognition : MonoBehaviour {
         personGo.transform.localScale = scale;
 
         // Instantiate Object Button
-        pm.InstantiateButton(trackedImage);
+        //pm.InstantiateButton(trackedImage);
     }
     void UpdateTrackable(ARTrackedImage trackedImage) {        
         var planeGo = trackedImage.transform.GetChild(0).gameObject;
@@ -141,7 +142,7 @@ public class ImageRecognition : MonoBehaviour {
         if (trackedImage.trackingState == TrackingState.Tracking) {
             if (name[0] == 'm') {
                 personGo.SetActive(true);
-                pm.DestroyInstance(trackedImage);
+                //pm.DestroyInstance(trackedImage);
             }
             planeGo.SetActive(true);
         }
@@ -170,7 +171,6 @@ public class ImageRecognition : MonoBehaviour {
             input.waist = int.Parse(inp[5]);
             dict.Add(name, input);
             ++index;
-            //Debug.Log("Parsed " + name);
         }
     }
 }

@@ -448,6 +448,7 @@ public class EvaluationManager : MonoBehaviour {
         }
         else if(state == State.Done) {
             done.SetActive(false);
+            learning.SetActive(false);
             if (isPerfect) {
                 state = State.NewInput;
                 foreach (var trackedImage in arTrackedImageManager.trackables) {
@@ -459,19 +460,21 @@ public class EvaluationManager : MonoBehaviour {
             }
         }
         else if(state == State.NewInput) {
-            learning.SetActive(false);
+            
         }
     }
 
     void OnClickRun() {
         if (state == State.Pivot) {
+            if(!Eval()) {
+                return;
+            }
             OnClickLearn();
             state = State.Learn;
             learn.SetActive(true);
             sliderLearn.value = sliderLearn.minValue;
             minBound = (int)(slider.minValue / 10f);
             maxBound = (int)(slider.maxValue / 10f);
-            Eval();
         }
     }
     void OnClickRunLearn() {
@@ -504,8 +507,9 @@ public class EvaluationManager : MonoBehaviour {
         }
     }
 
-    void Eval() {
+    bool Eval() {
         //register inputs
+        list = new List<Object>();
         foreach (var trackedImage in arTrackedImageManager.trackables) {
             var name = trackedImage.referenceImage.name;
             if (name[0] == 'm') {
@@ -532,6 +536,7 @@ public class EvaluationManager : MonoBehaviour {
         }
 
         Debug.Log(list.Count + "inputs in evaluation");
+        return list.Count > 0;
     }
 
     void EvalRepeat() {
