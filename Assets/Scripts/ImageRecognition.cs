@@ -22,6 +22,31 @@ public struct Info {
     public int gender;
     public int head;
     public int waist;
+
+    public int getVal(int i) {
+        if (i == Height)
+            return height;
+        else if (i == Weight)
+            return weight;
+        else if (i == Head)
+            return head;
+        else if (i == Waist)
+            return waist;
+        else
+            return 0;
+    }
+    public static Vector2Int getRange(int i) {
+        if (i == Height)
+            return new Vector2Int(minHeight, maxHeight);
+        else if (i == Weight)
+            return new Vector2Int(minWeight, maxWeight);
+        else if (i == Head)
+            return new Vector2Int(minHead, maxHead);
+        else if (i == Waist)
+            return new Vector2Int(minWaist, maxWaist);
+        else
+            return new Vector2Int(0, 0);
+    }
 };
 
 public class ImageRecognition : MonoBehaviour {
