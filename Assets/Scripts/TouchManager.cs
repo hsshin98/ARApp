@@ -9,6 +9,26 @@ public class TouchManager : MonoBehaviour {
     public GameObject textPrefab;
     public GameObject parent;
     private bool isCleared;
+
+    private ChartManager chart;
+    private MenuManager menu;
+    private GroupHighlight group;
+    private EvaluationManager learn;
+    private ButtonState curr = ButtonState.None;
+    public enum ButtonState {
+        None,
+        Chart,
+        Menu,
+        Group,
+        Learn
+    }
+
+    private void Awake() {
+        chart = FindObjectOfType<ChartManager>();
+        menu = FindObjectOfType<MenuManager>();
+        group = FindObjectOfType<GroupHighlight>();
+        learn = FindObjectOfType<EvaluationManager>();
+    }
     void Start() {
         isCleared = true;
 
@@ -63,5 +83,29 @@ public class TouchManager : MonoBehaviour {
         w.GetComponentInChildren<Text>().text = info.weight + "kg";
         head.GetComponentInChildren<Text>().text = info.head + "cm";
         waist.GetComponentInChildren<Text>().text = info.waist + "cm";
+    }
+
+    public void ExclusiveButton(ButtonState next) {
+        if(next == curr) {
+            curr = ButtonState.None;
+            return;
+        }
+        else if(curr != ButtonState.None) {
+            switch(curr) {
+                case ButtonState.Menu:
+                    menu.OnClick();
+                    break;
+                case ButtonState.Chart:
+                    chart.OnClickButton();
+                    break;
+                case ButtonState.Learn:
+                    learn.OnClickLearn();
+                    break;
+                case ButtonState.Group:
+                    group.OnClick();
+                    break;
+            }
+        }
+        curr = next;
     }
 }

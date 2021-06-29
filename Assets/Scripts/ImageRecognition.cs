@@ -68,7 +68,7 @@ public class ImageRecognition : MonoBehaviour {
     }
 
     void Start() {
-        Debug.Log(dict["m1"].height);
+        //Debug.Log(dict["m1"].height);
     }
 
     void Update() {

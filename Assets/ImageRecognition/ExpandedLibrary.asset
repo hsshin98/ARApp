@@ -1059,8 +1059,8 @@ MonoBehaviour:
       m_GuidLow: 5305994569152467467
       m_GuidHigh: 5006771305374068895
     m_SerializedTextureGuid:
-      m_GuidLow: 17303982213524812492
-      m_GuidHigh: 9531551369559266744
+      m_GuidLow: 10625240871623462736
+      m_GuidHigh: 10546874994684208842
     m_Size: {x: 0.05, y: 0.05}
     m_SpecifySize: 1
     m_Name: qrgt
@@ -1099,8 +1099,8 @@ MonoBehaviour:
       m_GuidLow: 5657925440956298810
       m_GuidHigh: 1604387230388672437
     m_SerializedTextureGuid:
-      m_GuidLow: 17015793386334859319
-      m_GuidHigh: 319830972446577448
+      m_GuidLow: 17096803646929529972
+      m_GuidHigh: 8969643569928653209
     m_Size: {x: 0.05, y: 0.05}
     m_SpecifySize: 1
     m_Name: qrlt

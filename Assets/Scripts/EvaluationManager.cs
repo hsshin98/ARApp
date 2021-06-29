@@ -51,7 +51,7 @@ public class EvaluationManager : MonoBehaviour {
     private int minBound, maxBound;
     private float repeatSpeed = 1.0f;
     private GameObject content;
-
+    private TouchManager tm;
     private void Awake() {
         arTrackedImageManager = FindObjectOfType<ARTrackedImageManager>();
         pivot = transform.GetChild(0).gameObject;
@@ -64,6 +64,7 @@ public class EvaluationManager : MonoBehaviour {
     }
 
     void Start() {
+        tm = FindObjectOfType<TouchManager>();
         dict = FindObjectOfType<ImageRecognition>().dict;
         list = new List<Object>();
         optimalVal = new List<int>();
@@ -84,7 +85,7 @@ public class EvaluationManager : MonoBehaviour {
         
         run = pivot.transform.GetChild(4).GetComponent<Button>();
         run.onClick.AddListener(OnClickRun);
-        valText = pivot.transform.GetChild(6).GetComponent<Text>();
+        valText = pivot.transform.GetChild(7).GetComponent<Text>();
 
         //learn
         learn.SetActive(false);
@@ -427,14 +428,14 @@ public class EvaluationManager : MonoBehaviour {
         
     }
 
-    void OnClickLearn() {
+    public void OnClickLearn() {
+        tm.ExclusiveButton(TouchManager.ButtonState.Learn);
         //set pivot
         if (state == State.Ready) {
             state = State.Pivot;
             pivot.SetActive(true);
             slider.value = slider.minValue;
             slider.GetComponentInChildren<Text>().text = "";
-            ClearTable();
         }
         else if(state == State.Pivot) {
             state = State.Ready;
@@ -469,7 +470,10 @@ public class EvaluationManager : MonoBehaviour {
             if(!Eval()) {
                 return;
             }
-            OnClickLearn();
+            pivot.SetActive(false);
+            AttFrame.GetComponentInChildren<Text>().text = "속성";
+            CompFrame.GetComponentInChildren<Text>().text = "크다 / 작다";
+
             state = State.Learn;
             learn.SetActive(true);
             sliderLearn.value = sliderLearn.minValue;
@@ -479,6 +483,7 @@ public class EvaluationManager : MonoBehaviour {
     }
     void OnClickRunLearn() {
         if (state == State.Learn) {
+            ClearTable();
             state = State.Learning;
             learn.SetActive(false);
             learning.SetActive(true);

@@ -19,12 +19,15 @@ public class GroupHighlight : MonoBehaviour {
     private bool isActive, isHighlighted;
     private ARTrackedImageManager arTrackedImageManager;
     private Dictionary<string, Info> dict;
+    private TouchManager tm;
 
     private void Awake() {
         arTrackedImageManager = FindObjectOfType<ARTrackedImageManager>();
     }
 
     void Start() {
+        tm = FindObjectOfType<TouchManager>();
+
         isActive = false;
         isHighlighted = false;
 
@@ -159,7 +162,8 @@ public class GroupHighlight : MonoBehaviour {
         }
     }
 
-    void OnClick() {
+    public void OnClick() {
+        tm.ExclusiveButton(TouchManager.ButtonState.Group);
         if(isHighlighted) {
             isHighlighted = false;
             DisableHighlight();
@@ -187,7 +191,7 @@ public class GroupHighlight : MonoBehaviour {
             case Info.Weight:
                 scale.x = value / 250f;
                 scale.z = value / 250f;
-                text += "cm";
+                text += "kg";
                 break;
             case Info.Head:
                 text += "cm";
@@ -263,7 +267,9 @@ public class GroupHighlight : MonoBehaviour {
             }
             
         }
-        OnClick();
+
+        person.SetActive(false);
+        gameObject.SetActive(false);
         isHighlighted = true;
     }
 

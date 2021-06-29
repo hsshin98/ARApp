@@ -11,9 +11,11 @@ public class MenuManager : MonoBehaviour {
     private Slider slider;
     private Button menu, display, reset, option;
     private GameObject speed;
+    private TouchManager tm;
 
     private void Awake() {
         em = FindObjectOfType<EvaluationManager>();
+        tm = FindObjectOfType<TouchManager>();
 
         menu = transform.GetChild(0).GetComponent<Button>();
         display = transform.GetChild(1).GetComponent<Button>();
@@ -33,6 +35,7 @@ public class MenuManager : MonoBehaviour {
     }
 
     public void OnClick() {
+        tm.ExclusiveButton(TouchManager.ButtonState.Menu);
         slider.gameObject.SetActive(false);
         if (toggle == false) {
             toggle = true;
@@ -54,7 +57,9 @@ public class MenuManager : MonoBehaviour {
     }
 
     void OnClickSettings() {
-        OnClick();
+        toggle = true;
+        option.gameObject.SetActive(false);
+        reset.gameObject.SetActive(false);
 
         slider.gameObject.SetActive(true);
     }
