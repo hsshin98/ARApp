@@ -275,7 +275,7 @@ public class EvaluationManager : MonoBehaviour {
             float s = sliderLearn.value / 10f;
 
             string text = v + unit + "부터 " + s + "만큼 " + str + " 하면서 최적값 찾아보기";
-            learn.transform.GetChild(2).GetComponent<Text>().text = text;
+            learn.transform.GetChild(3).GetComponent<Text>().text = text;
         }
         else if(state == State.Learning) {
             //update panel position
